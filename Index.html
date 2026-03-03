@@ -1,0 +1,1906 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Kiro – מומחה פיננסי AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ══ VARIABLES ══ */
+:root{
+  --bg:#090d12;
+  --bg-mid:#0e1219;
+  --bg-sur:#141a24;
+  --bg-rai:#1a2230;
+  --gold:#c9a84c;
+  --gold-l:#e2c47a;
+  --gold-d:#7a6030;
+  --gold-glow:rgba(201,168,76,.18);
+  --text:#ede9e3;
+  --text-s:#9a9790;
+  --text-m:#55514e;
+  --teal:#2ab5a0;
+  --red:#e05555;
+  --bdr:rgba(201,168,76,.14);
+  --bdr-s:rgba(255,255,255,.055);
+  --sbw:285px;
+  --tr:.2s cubic-bezier(.4,0,.2,1);
+  --rsm:7px;
+  --rmd:13px;
+}
+body.light{
+  --bg:#f2ede5;
+  --bg-mid:#e8e2d8;
+  --bg-sur:#ddd7cc;
+  --bg-rai:#d0c9bc;
+  --gold:#8a6520;
+  --gold-l:#5c4210;
+  --gold-d:#b08030;
+  --gold-glow:rgba(138,101,32,.12);
+  --text:#1a1714;
+  --text-s:#4a4540;
+  --text-m:#8a8278;
+  --bdr:rgba(138,101,32,.2);
+  --bdr-s:rgba(0,0,0,.08);
+}
+
+/* ══ RESET ══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;background:var(--bg);color:var(--text)}
+button{font-family:inherit;cursor:pointer}
+textarea{font-family:inherit}
+
+/* ══ LAYOUT ══ */
+#app{display:flex;height:100vh;overflow:hidden}
+
+/* ══ SIDEBAR ══ */
+#sb{
+  width:var(--sbw);height:100vh;
+  background:var(--bg-mid);
+  border-inline-end:1px solid var(--bdr);
+  display:flex;flex-direction:column;
+  flex-shrink:0;overflow:hidden;z-index:10;
+  transition:width var(--tr),transform var(--tr),border-color var(--tr);
+}
+#sb.off{width:0;border-inline-end:none}
+.sb-top{
+  padding:15px 17px 11px;
+  border-bottom:1px solid var(--bdr-s);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.sb-brand{display:flex;align-items:center;gap:9px}
+.sb-ico{
+  width:29px;height:29px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  border-radius:var(--rsm);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:#090d12;
+}
+.sb-name{
+  font-family:'Cormorant Garamond',serif;font-size:18px;
+  font-weight:600;color:var(--gold-l);letter-spacing:1px;
+}
+.sb-close{
+  background:none;border:none;color:var(--text-m);padding:6px;
+  border-radius:var(--rsm);display:flex;transition:all var(--tr);
+}
+.sb-close:hover{color:var(--text);background:var(--bg-rai)}
+
+/* Tabs */
+.sb-tabs{display:flex;border-bottom:1px solid var(--bdr-s);flex-shrink:0}
+.sbt{
+  flex:1;background:none;border:none;color:var(--text-m);
+  font-size:11px;font-weight:500;padding:9px 2px;
+  border-bottom:2px solid transparent;transition:all var(--tr);text-align:center;
+}
+.sbt.on{color:var(--gold-l);border-bottom-color:var(--gold)}
+.sbt:hover:not(.on){color:var(--text-s)}
+
+/* Panels */
+.sb-body{flex:1;overflow-y:auto;padding:17px 19px;scrollbar-width:thin;scrollbar-color:var(--bg-rai) transparent}
+.sb-body::-webkit-scrollbar{width:3px}
+.sb-body::-webkit-scrollbar-thumb{background:var(--bg-rai);border-radius:2px}
+.pnl{display:none}.pnl.on{display:block}
+.sg{margin-bottom:20px}
+.sg-lbl{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-m);margin-bottom:8px}
+.sg-txt{font-size:12px;color:var(--text-m);line-height:1.75}
+
+/* Theme toggle */
+.th-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--bg-sur);border-radius:var(--rsm);padding:10px 13px;
+  cursor:pointer;transition:background var(--tr);
+}
+.th-row:hover{background:var(--bg-rai)}
+.th-label{font-size:13px;color:var(--text-s)}
+.tsw{
+  width:35px;height:19px;background:var(--bg-rai);border-radius:10px;
+  position:relative;transition:background var(--tr);
+  border:1px solid var(--bdr-s);pointer-events:none;flex-shrink:0;
+}
+.tsw.on{background:var(--gold-d)}
+.tsw::after{
+  content:'';position:absolute;width:13px;height:13px;
+  background:var(--text-m);border-radius:50%;top:2px;right:2px;
+  transition:all var(--tr);
+}
+.tsw.on::after{background:var(--gold-l);right:calc(100% - 15px)}
+
+/* API key field */
+.api-wrap{display:flex;flex-direction:column;gap:7px}
+.api-input{
+  width:100%;background:var(--bg-sur);border:1px solid var(--bdr-s);
+  color:var(--text);font-family:'DM Mono',monospace;font-size:11.5px;
+  padding:9px 11px;border-radius:var(--rsm);outline:none;
+  transition:border-color var(--tr);direction:ltr;
+}
+.api-input:focus{border-color:rgba(201,168,76,.4)}
+.api-input::placeholder{color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:12px}
+.api-btn{
+  width:100%;background:linear-gradient(135deg,var(--gold-d),rgba(201,168,76,.1));
+  border:1px solid var(--bdr);color:var(--gold-l);
+  font-size:12px;font-weight:600;padding:9px;border-radius:var(--rsm);
+  transition:all var(--tr);
+}
+.api-btn:hover{box-shadow:0 4px 16px var(--gold-glow)}
+.api-ok{font-size:11px;color:var(--teal);text-align:center;display:none}
+.api-note{font-size:11px;color:var(--text-m);line-height:1.9;margin-top:4px}
+.api-note strong{color:var(--gold-l)}
+.key-status{
+  background:var(--bg-sur);border:1px solid var(--bdr-s);
+  border-radius:var(--rsm);padding:10px 13px;
+  font-size:12px;color:var(--text-m);line-height:1.75;
+}
+.key-active{border-color:rgba(42,181,160,.35)!important;color:var(--teal)!important;font-weight:500}
+.key-none{color:var(--text-m)}
+
+/* About tags */
+.about-h{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:600;color:var(--gold-l);margin-bottom:8px;
+}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.tag{
+  background:var(--bg-rai);border:1px solid var(--bdr-s);
+  color:var(--text-s);font-size:11px;padding:3px 9px;border-radius:14px;
+}
+
+/* Legal boxes */
+.dbox{
+  background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.14);
+  border-radius:var(--rmd);padding:12px;margin-bottom:11px;
+}
+.dbox-t{font-size:10px;font-weight:600;letter-spacing:.5px;color:var(--gold);text-transform:uppercase;margin-bottom:5px}
+.dbox-b{font-size:12px;color:var(--text-m);line-height:1.75}
+
+/* ══ MAIN ══ */
+#main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden;min-width:0}
+
+/* Topbar */
+#topbar{
+  height:51px;flex-shrink:0;
+  display:grid;grid-template-columns:auto 1fr auto;align-items:center;
+  padding:0 13px;gap:8px;
+  border-bottom:1px solid var(--bdr-s);
+  background:rgba(9,13,18,.92);backdrop-filter:blur(20px);
+  z-index:5;
+}
+body.light #topbar{background:rgba(242,237,229,.92)}
+.tb-l,.tb-r{display:flex;align-items:center}
+.tb-r{justify-content:flex-end}
+.tb-c{display:flex;align-items:center;justify-content:center;gap:8px}
+.tb-k{
+  width:28px;height:28px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:#090d12;
+  flex-shrink:0;
+}
+.tb-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;font-weight:600;color:var(--gold-l);letter-spacing:1px;
+}
+.sdot{
+  width:6px;height:6px;background:var(--teal);border-radius:50%;
+  box-shadow:0 0 6px rgba(42,181,160,.6);
+  animation:pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.85)}}
+.icon-btn{
+  background:none;border:none;color:var(--text-s);
+  padding:8px;border-radius:var(--rsm);display:flex;transition:all var(--tr);
+}
+.icon-btn:hover{color:var(--gold-l);background:var(--bg-sur)}
+.new-btn{
+  background:none;border:1.5px solid var(--gold-d);color:var(--gold-l);
+  font-size:12px;font-weight:600;padding:5px 13px;border-radius:var(--rsm);
+  transition:all var(--tr);white-space:nowrap;letter-spacing:0.3px;
+  opacity:0.85;
+}
+.new-btn:hover{opacity:1;background:rgba(185,149,81,0.08);border-color:var(--gold)}
+
+/* Lang bar — dir:ltr LOCKED, order never flips */
+#langbar{
+  flex-shrink:0;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;
+  background:var(--bg-mid);border-bottom:1px solid var(--bdr-s);
+  direction:ltr !important;
+}
+.lb{
+  background:none;border:none;border-left:1px solid var(--bdr-s);
+  color:var(--text-m);font-size:12px;font-weight:500;
+  padding:8px 4px;transition:all var(--tr);text-align:center;direction:ltr;
+}
+.lb:first-child{border-left:none}
+.lb:hover{background:var(--bg-sur);color:var(--text)}
+.lb.on{
+  background:var(--bg-sur);color:var(--gold-l);
+  font-weight:600;border-bottom:2px solid var(--gold);
+}
+
+/* ══ BODY ══ */
+#body{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* Scroll area */
+#scroll{
+  flex:1;min-height:0;overflow-y:auto;
+  scroll-behavior:auto;
+  scrollbar-width:thin;scrollbar-color:var(--bg-rai) transparent;
+}
+#scroll::-webkit-scrollbar{width:3px}
+#scroll::-webkit-scrollbar-thumb{background:var(--bg-rai);border-radius:2px}
+
+/* Welcome */
+#welcome{
+  display:flex;flex-direction:column;align-items:center;
+  text-align:center;padding:42px 24px 30px;
+  animation:fadeUp .45s ease both;
+}
+#welcome.gone{display:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.w-ico{
+  width:62px;height:62px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;color:#090d12;
+  margin-bottom:17px;box-shadow:0 8px 32px var(--gold-glow);
+}
+.w-ttl{
+  font-family:'Cormorant Garamond',serif;
+  font-size:29px;font-weight:600;color:var(--gold-l);
+  margin-bottom:9px;letter-spacing:.4px;
+}
+.w-sub{font-size:14px;color:var(--text-s);max-width:420px;line-height:1.8}
+
+/* Messages */
+#msgs{
+  max-width:740px;width:100%;margin:0 auto;
+  padding:8px 18px 24px;
+  display:flex;flex-direction:column;gap:5px;
+}
+.mw{display:flex;flex-direction:column;animation:fadeUp .2s ease both}
+.mw.u{align-items:flex-end}
+.mrow{display:flex;align-items:flex-start;gap:9px}
+.mw.u .mrow{flex-direction:row-reverse}
+.av{
+  width:27px;height:27px;border-radius:8px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.av.k{background:linear-gradient(135deg,var(--gold),var(--gold-d));color:#090d12;font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700}
+.av.u{background:var(--bg-rai);color:var(--text-s);border:1px solid var(--bdr-s)}
+.bbl{
+  max-width:83%;padding:11px 15px;border-radius:var(--rmd);
+  font-size:14px;line-height:1.8;position:relative;
+  word-wrap:break-word;overflow-wrap:break-word;word-break:break-word;
+}
+.bbl.k{
+  background:var(--bg-sur);border:1px solid var(--bdr-s);color:var(--text);
+  border-start-start-radius:3px;
+}
+.bbl.u{
+  background:linear-gradient(135deg,rgba(201,168,76,.13),rgba(201,168,76,.04));
+  border:1px solid rgba(201,168,76,.2);color:var(--text);
+  border-start-end-radius:3px;
+}
+/* Markdown inside bubble */
+.bbl strong{color:var(--gold-l);font-weight:600}
+.bbl em{color:var(--text-s);font-style:italic}
+.bbl code{
+  font-family:'DM Mono',monospace;font-size:11.5px;
+  background:var(--bg);padding:2px 6px;border-radius:4px;color:var(--gold-l);
+}
+.bbl pre{
+  background:var(--bg);border:1px solid var(--bdr-s);border-radius:var(--rsm);
+  padding:10px 12px;overflow-x:auto;margin:7px 0;
+  font-family:'DM Mono',monospace;font-size:11px;color:var(--text-s);
+}
+.bbl ul,.bbl ol{padding-inline-start:18px;margin:5px 0}
+.bbl li{margin-bottom:3px}
+.bbl h3{font-family:'Cormorant Garamond',serif;color:var(--gold-l);margin:11px 0 5px;font-size:18px;font-weight:600}
+.bbl h4{color:var(--gold-l);margin:8px 0 3px;font-size:14px;font-weight:600}
+.bbl table{border-collapse:collapse;width:100%;margin:8px 0;font-size:12.5px}
+.bbl th{background:var(--bg-rai);color:var(--gold-l);padding:6px 10px;text-align:start;font-weight:600;border-bottom:1px solid var(--bdr)}
+.bbl td{padding:5px 10px;border-bottom:1px solid var(--bdr-s);color:var(--text-s)}
+.bbl tr:last-child td{border-bottom:none}
+.bq{border-inline-start:3px solid var(--gold-d);padding:4px 10px;color:var(--text-m);font-size:13px;margin:5px 0;background:rgba(201,168,76,.04);border-radius:2px}
+.cp-btn{
+  position:absolute;top:6px;inset-inline-end:7px;
+  background:var(--bg-rai);border:1px solid var(--bdr-s);color:var(--text-m);
+  font-size:10px;padding:2px 7px;border-radius:4px;
+  opacity:0;transition:opacity var(--tr);
+}
+.bbl.k:hover .cp-btn{opacity:1}
+.cp-btn:hover{color:var(--gold-l)}
+.mt{font-size:10px;color:var(--text-m);padding:3px 4px}
+.mw.u .mt{text-align:end}
+
+/* Typing dots */
+.tdots{display:flex;align-items:center;gap:4px;padding:3px 0}
+.tdot{width:5px;height:5px;background:var(--gold-d);border-radius:50%;animation:td 1.3s ease-in-out infinite}
+.tdot:nth-child(2){animation-delay:.22s}
+.tdot:nth-child(3){animation-delay:.44s}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-5px);opacity:1}}
+
+/* ══ INPUT ══ */
+#inp-area{
+  flex-shrink:0;
+  padding:13px 16px 20px;
+  background:var(--bg);
+  border-top:1px solid var(--bdr-s);
+}
+.inp-box{
+  max-width:740px;width:100%;margin:0 auto;
+  background:var(--bg-sur);
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:17px;
+  display:flex;flex-direction:column;
+  padding:13px 15px 11px;
+  transition:border-color var(--tr),box-shadow var(--tr);
+  cursor:text;min-height:78px;
+}
+.inp-box:focus-within{
+  border-color:rgba(201,168,76,.42);
+  box-shadow:0 0 0 3px rgba(201,168,76,.07);
+}
+#inp{
+  background:none;border:none;outline:none;
+  color:var(--text);font-size:15px;line-height:1.7;
+  resize:none;min-height:42px;max-height:190px;
+  overflow-y:auto;scrollbar-width:none;
+  direction:inherit;width:100%;
+}
+#inp::-webkit-scrollbar{display:none}
+#inp::placeholder{color:var(--text-m)}
+.inp-foot{
+  display:flex;align-items:center;justify-content:flex-end;
+  margin-top:7px;padding-top:7px;border-top:1px solid var(--bdr-s);
+}
+#send{
+  width:37px;height:37px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-d));
+  border:none;border-radius:10px;color:#090d12;
+  display:flex;align-items:center;justify-content:center;
+  transition:all var(--tr);opacity:.22;flex-shrink:0;
+}
+#send.on{opacity:1}
+#send.on:hover{transform:scale(1.07);box-shadow:0 4px 16px var(--gold-glow)}
+#send:disabled{cursor:not-allowed}
+.inp-hint{
+  text-align:center;font-size:10px;color:var(--text-m);
+  margin-top:7px;max-width:740px;margin-left:auto;margin-right:auto;
+}
+
+/* Overlay (mobile) */
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:9;backdrop-filter:blur(4px)}
+#ov.on{display:block}
+
+/* ══ MOBILE ══ */
+@media(max-width:768px){
+  #sb{position:fixed;inset-block:0;inset-inline-start:0;height:100vh;z-index:20;width:var(--sbw)!important}
+  #sb.off{transform:translateX(110%)}
+  [dir="ltr"] #sb.off{transform:translateX(-110%)}
+  .bbl{max-width:90%}
+  #inp-area{padding:10px 12px 17px}
+  #welcome{padding:26px 16px 20px}
+  .w-ttl{font-size:25px}
+}
+</style>
+</head>
+<body class="light">
+<div id="app">
+
+<!-- ══ SIDEBAR ══ -->
+<aside id="sb" class="off">
+  <div class="sb-top">
+    <div class="sb-brand">
+      <div class="sb-ico">K</div>
+      <span class="sb-name">Kiro</span>
+    </div>
+    <button class="sb-close" onclick="toggleSB()" aria-label="סגור">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <div class="sb-tabs">
+    <button class="sbt on" id="sbt-s" onclick="showTab('s')"></button>
+    <button class="sbt"    id="sbt-a" onclick="showTab('a')"></button>
+    <button class="sbt"    id="sbt-l" onclick="showTab('l')"></button>
+  </div>
+
+  <div class="sb-body">
+
+    <!-- Settings -->
+    <div class="pnl on" id="pnl-s">
+      <div class="sg">
+        <div class="sg-lbl" id="L-theme"></div>
+        <div class="th-row" onclick="toggleTheme()">
+          <span class="th-label" id="L-lm"></span>
+          <div class="tsw" id="tsw"></div>
+        </div>
+      </div>
+      <div class="sg">
+        <p class="sg-txt" id="L-ver"></p>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="pnl" id="pnl-a">
+      <div class="sg">
+        <div class="about-h">Kiro</div>
+        <p class="sg-txt" id="L-about"></p>
+      </div>
+      <div class="sg">
+        <div class="sg-lbl" id="L-exp-lbl"></div>
+        <div class="tags" id="L-tags"></div>
+      </div>
+    </div>
+
+    <!-- Legal -->
+    <div class="pnl" id="pnl-l">
+      <div class="dbox">
+        <div class="dbox-t" id="L-disc-t"></div>
+        <div class="dbox-b" id="L-disc-b"></div>
+      </div>
+      <div class="dbox">
+        <div class="dbox-t" id="L-priv-t"></div>
+        <div class="dbox-b" id="L-priv-b"></div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<div id="main">
+
+  <header id="topbar">
+    <div class="tb-l">
+      <button class="icon-btn" onclick="toggleSB()" aria-label="תפריט">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="tb-c">
+      <div class="tb-k">K</div>
+      <div class="tb-name">Kiro</div>
+    </div>
+    <div class="tb-r">
+      <button class="new-btn" id="L-new" onclick="newChat()"></button>
+    </div>
+  </header>
+
+  <!-- Lang bar: dir=ltr locked — Español | English | عربي | עברית -->
+  <div id="langbar" dir="ltr">
+    <button class="lb"    id="lb-es" onclick="setLang('es')">Español</button>
+    <button class="lb on" id="lb-en" onclick="setLang('en')">English</button>
+    <button class="lb"    id="lb-ar" onclick="setLang('ar')">عربي</button>
+    <button class="lb"    id="lb-he" onclick="setLang('he')">עברית</button>
+  </div>
+
+  <div id="body">
+    <div id="scroll">
+      <div id="welcome">
+        <div class="w-ico">K</div>
+        <div class="w-ttl" id="L-wttl"></div>
+        <p class="w-sub" id="L-wsub"></p>
+      </div>
+      <div id="msgs"></div>
+    </div>
+
+    <div id="word-warn" style="display:none;"></div>
+    <div id="inp-area">
+      <div class="inp-box" onclick="document.getElementById('inp').focus()">
+        <textarea id="inp" rows="1"
+          oninput="onInput(this)"
+          onkeydown="onKey(event)"
+        ></textarea>
+        <div class="inp-foot">
+          <button id="send" onclick="sendMsg()" disabled aria-label="שלח">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="inp-hint" id="L-hint"></div>
+
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<div id="ov" onclick="toggleSB()"></div>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let lang = 'en';
+let light = true;
+let sbOpen = false;
+let typing = false;
+let msgCount = 0;
+let history = [];  // {role:'user'|'assistant', content:string}
+let apiKey = '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';
+const GROQ_KEY = apiKey;
+
+/* ══════════════════════════════════════
+   TRANSLATIONS
+══════════════════════════════════════ */
+const T = {
+  he: {
+    dir: 'rtl',
+    new: 'שיחה חדשה',
+    wTtl: 'שלום, אני Kiro',
+    wSub: 'בוט AI פיננסי. כתוב לי בכל שפה ואגיב באותה השפה.',
+    ph: 'שאל אותי כל שאלה פיננסית...',
+    hint: 'Kiro · מידע פיננסי כללי בלבד · לא ייעוץ השקעות אישי',
+    tabS: '⚙️ הגדרות', tabA: 'ℹ️ אודות', tabL: '⚖️ משפטי',
+    theme: 'ערכת נושא', lm: 'מצב בהיר',
+    save: 'שמור מפתח',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · ללא שמירת נתונים',
+    about: 'Kiro הוא מומחה פיננסי AI המחובר ל-Groq. מסוגל לבצע חישובים, לנתח שווקים, להסביר מושגים פיננסיים ולענות על כל שאלה בכל שפה.',
+    expLbl: 'תחומי מומחיות',
+    tags: ['משכנתאות','ריבית דריבית','מניות ובורסה','NPV / IRR / DCF','CAGR','ETF ואג"ח','הערכת שווי חברות','פורקס','קריפטו','שעות מסחר עולמיות','יחסים פיננסיים','מיסוי','אינפלציה','ניהול תיק'],
+    discT: '⚠️ כתב ויתור',
+    discB: 'Kiro מספק מידע פיננסי כללי בלבד. אין לראות בתשובות ייעוץ השקעות, ניהול תיקים או ייעוץ מס אישי.',
+    privT: '🔒 פרטיות',
+    privB: 'שיחות עוברות ישירות ל-Groq API ואינן נשמרות לאחר סיום הסשן.',
+    keySaved: '✓ מפתח נשמר — Kiro פעיל!',
+    noKey: '⚠️ הכנס מפתח Groq בהגדרות (☰) כדי שאוכל לענות.',
+    err401: '⚠️ מפתח לא תקין. בדוק בהגדרות.',
+    err429: '⚠️ אני טיפה עמוס כרגע — נסה שוב בעוד כמה שניות 😊',
+    err429b: '⚠️ עדיין עמוס. נסה שוב בעוד דקה.',
+    errNet: '⚠️ שגיאת רשת — בדוק חיבור אינטרנט.',
+    err0: '⚠️ פתח את הקובץ דרך Chrome ← הורדות (לא מהקבצים ישירות).',
+    errParse: '⚠️ שגיאת תקשורת עם השרת. נסה שוב.',
+    errGen: '⚠️ שגיאה: ',
+    wordWarn: 'הודעתך ארוכה מדי. אנא קצר את ההודעה ל-100 מילים לכל היותר',
+    sessionEnd: 'הגעת למגבלת ההודעות של שיחה זו. כדי לשמור על מהירות גבוהה ואיכות תשובות מיטבית, כל שיחה מוגבלת במספר ההודעות. כדי להמשיך — לחץ על כפתור «שיחה חדשה».',
+  },
+  ar: {
+    dir: 'rtl',
+    new: 'محادثة جديدة',
+    wTtl: 'مرحباً، أنا Kiro',
+    wSub: 'روبوت AI مالي. اكتب بأي لغة وسأرد بنفس اللغة.',
+    ph: 'اسألني أي سؤال مالي...',
+    hint: 'Kiro · معلومات مالية عامة فقط · ليست نصيحة استثمارية',
+    tabS: '⚙️ إعدادات', tabA: 'ℹ️ حول', tabL: '⚖️ قانوني',
+    theme: 'المظهر', lm: 'الوضع الفاتح',
+    save: 'حفظ المفتاح',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · لا تخزين للبيانات',
+    about: 'Kiro خبير مالي بالذكاء الاصطناعي متصل بـ Groq. يجري الحسابات، يحلل الأسواق، ويشرح المفاهيم المالية بأي لغة.',
+    expLbl: 'مجالات التخصص',
+    tags: ['رهون عقارية','فائدة مركبة','أسهم وبورصة','NPV / IRR / DCF','CAGR','ETF وسندات','تقييم شركات','فوركس','عملات رقمية','ساعات التداول','نسب مالية','ضرائب','تضخم','إدارة محفظة'],
+    discT: '⚠️ إخلاء مسؤولية',
+    discB: 'يقدم Kiro معلومات مالية عامة فقط. لا يُعدّ نصيحة استثمارية أو إدارة محافظ أو استشارة ضريبية.',
+    privT: '🔒 الخصوصية',
+    privB: 'تمر المحادثات مباشرةً إلى Groq API ولا تُحفظ بعد انتهاء الجلسة.',
+    keySaved: '✓ تم حفظ المفتاح — Kiro نشط!',
+    noKey: '⚠️ أدخل مفتاح Groq في الإعدادات (☰) لأتمكن من الإجابة.',
+    err401: '⚠️ مفتاح غير صالح. تحقق من الإعدادات.',
+    err429: '⚠️ أنا مشغول قليلاً الآن — حاول مجدداً بعد ثوانٍ 😊',
+    err429b: '⚠️ لا يزال مشغولاً. حاول مجدداً بعد دقيقة.',
+    errNet: '⚠️ خطأ في الشبكة — تحقق من الاتصال.',
+    err0: '⚠️ افتح الملف من Chrome التنزيلات وليس من مدير الملفات.',
+    errParse: '⚠️ خطأ في الاتصال بالخادم. حاول مجدداً.',
+    errGen: '⚠️ خطأ: ',
+    wordWarn: 'رسالتك طويلة جداً. يُرجى اختصارها لتحتوي على 100 كلمة كحدٍّ أقصى',
+    sessionEnd: 'لقد وصلت إلى حدّ الرسائل في هذه المحادثة. للحفاظ على سرعة الاستجابة وجودة الإجابات، تكون كلّ محادثة محدودة بعدد من الرسائل. للمتابعة — اضغط على زر «محادثة جديدة».',
+  },
+  en: {
+    dir: 'ltr',
+    new: 'New Chat',
+    wTtl: "Hello, I'm Kiro",
+    wSub: "Financial AI bot. Write in any language and I'll respond in the same language.",
+    ph: 'Ask me any financial question...',
+    hint: 'Kiro · General financial info only · Not personal investment advice',
+    tabS: '⚙️ Settings', tabA: 'ℹ️ About', tabL: '⚖️ Legal',
+    theme: 'Theme', lm: 'Light Mode',
+    save: 'Save Key',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · No data stored',
+    about: 'Kiro is an AI financial expert powered by Groq. Capable of calculations, market analysis, and explaining financial concepts in any language.',
+    expLbl: 'Expertise',
+    tags: ['Mortgages','Compound Interest','Stocks & Markets','NPV / IRR / DCF','CAGR','ETFs & Bonds','Company Valuation','Forex','Crypto','Global Trading Hours','Financial Ratios','Taxation','Inflation','Portfolio Management'],
+    discT: '⚠️ Disclaimer',
+    discB: 'Kiro provides general financial information only. Not personal investment advice, portfolio management, or tax guidance.',
+    privT: '🔒 Privacy',
+    privB: 'Conversations go directly to Groq API and are not stored after the session ends.',
+    keySaved: '✓ Key saved — Kiro is active!',
+    noKey: '⚠️ Add your Groq API key in Settings (☰) to enable responses.',
+    err401: '⚠️ Invalid API key. Check Settings.',
+    err429: '⚠️ I\'m a bit busy right now — please try again in a few seconds 😊',
+    err429b: '⚠️ Still busy. Please try again in a minute.',
+    errNet: '⚠️ Network error — check your internet connection.',
+    err0: '⚠️ Open the file from Chrome Downloads tab, not Files app.',
+    errParse: '⚠️ Server error. Please try again.',
+    errGen: '⚠️ Error: ',
+    wordWarn: 'Your message is too long. Please shorten it to 100 words or fewer',
+    sessionEnd: 'You have reached the message limit for this conversation. To maintain fast response times and the highest quality of answers, each conversation is limited in length. To continue — press the «New Chat» button.',
+  },
+  es: {
+    dir: 'ltr',
+    new: 'Nueva conversación',
+    wTtl: 'Hola, soy Kiro',
+    wSub: 'Bot de IA financiero. Escribe en cualquier idioma y responderé en el mismo.',
+    ph: 'Hazme cualquier pregunta financiera...',
+    hint: 'Kiro · Solo información financiera general · No es asesoramiento de inversión',
+    tabS: '⚙️ Ajustes', tabA: 'ℹ️ Acerca de', tabL: '⚖️ Legal',
+    theme: 'Tema', lm: 'Modo claro',
+    save: 'Guardar clave',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Sin almacenamiento de datos',
+    about: 'Kiro es un experto financiero con IA, impulsado por Groq. Realiza cálculos, analiza mercados y explica conceptos financieros en cualquier idioma.',
+    expLbl: 'Especialidades',
+    tags: ['Hipotecas','Interés Compuesto','Acciones y Bolsa','NPV / IRR / DCF','CAGR','ETFs y Bonos','Valoración de Empresas','Forex','Cripto','Horarios de Trading','Ratios Financieros','Impuestos','Inflación','Gestión de Cartera'],
+    discT: '⚠️ Aviso legal',
+    discB: 'Kiro proporciona solo información financiera general. No es asesoramiento de inversión, gestión de carteras ni asesoría fiscal personal.',
+    privT: '🔒 Privacidad',
+    privB: 'Las conversaciones van directamente a Groq API y no se almacenan al finalizar la sesión.',
+    keySaved: '✓ Clave guardada — ¡Kiro está activo!',
+    noKey: '⚠️ Añade tu clave Groq en Ajustes (☰) para activar las respuestas.',
+    err401: '⚠️ Clave no válida. Comprueba los Ajustes.',
+    err429: '⚠️ Estoy un poco ocupado ahora — inténtalo de nuevo en unos segundos 😊',
+    err429b: '⚠️ Sigue ocupado. Intenta de nuevo en un minuto.',
+    errNet: '⚠️ Error de red — comprueba tu conexión.',
+    err0: '⚠️ Abre el archivo desde Chrome Descargas, no desde Archivos.',
+    errParse: '⚠️ Error de servidor. Inténtalo de nuevo.',
+    errGen: '⚠️ Error: ',
+    wordWarn: 'Tu mensaje es demasiado largo. Por favor, redúcelo a 100 palabras como máximo',
+    sessionEnd: 'Has alcanzado el límite de mensajes de esta conversación. Para mantener la velocidad de respuesta y la máxima calidad en las respuestas, cada conversación tiene un número limitado de mensajes. Para continuar — pulsa el botón «Nueva conversación».',
+  },
+
+  fr: {
+    dir: 'ltr',
+    new: 'Nouvelle conversation',
+    wTtl: 'Bonjour, je suis Kiro',
+    wSub: 'Assistant IA financier. Écrivez dans n\'importe quelle langue et je répondrai dans la même.',
+    ph: 'Posez-moi toute question financière...',
+    hint: 'Kiro · Informations financières générales uniquement · Pas un conseil en investissement',
+    tabS: '⚙️ Paramètres', tabA: 'ℹ️ À propos', tabL: '⚖️ Mentions légales',
+    theme: 'Thème', lm: 'Mode clair',
+    save: 'Enregistrer la clé',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Aucune donnée stockée',
+    about: 'Kiro est un expert financier IA propulsé par Groq. Il effectue des calculs, analyse les marchés et explique les concepts financiers dans toutes les langues.',
+    expLbl: 'Domaines d\'expertise',
+    tags: ['Hypothèques','Intérêts composés','Actions et Marchés','NPV / IRR / DCF','CAGR','ETF et Obligations','Valorisation d\'entreprises','Forex','Crypto','Horaires de trading','Ratios financiers','Fiscalité','Inflation','Gestion de portefeuille'],
+    discT: '⚠️ Avertissement',
+    discB: 'Kiro fournit uniquement des informations financières générales. Il ne s\'agit pas d\'un conseil en investissement, en gestion de portefeuille ou en fiscalité.',
+    privT: '🔒 Confidentialité',
+    privB: 'Les conversations transitent directement par l\'API Groq et ne sont pas conservées après la fin de la session.',
+    keySaved: '✓ Clé enregistrée — Kiro est actif !',
+    noKey: '⚠️ Ajoutez votre clé Groq dans Paramètres (☰) pour activer les réponses.',
+    err401: '⚠️ Clé invalide. Vérifiez les Paramètres.',
+    err429: '⚠️ Je suis un peu occupé en ce moment — réessayez dans quelques secondes 😊',
+    err429b: '⚠️ Toujours occupé. Réessayez dans une minute.',
+    errNet: '⚠️ Erreur réseau — vérifiez votre connexion internet.',
+    err0: '⚠️ Ouvrez le fichier depuis l\'onglet Téléchargements de Chrome.',
+    errParse: '⚠️ Erreur serveur. Réessayez.',
+    errGen: '⚠️ Erreur : ',
+    wordWarn: 'Votre message est trop long. Veuillez le réduire à 100 mots maximum',
+    sessionEnd: 'Vous avez atteint la limite de messages de cette conversation. Pour maintenir la rapidité des réponses et leur qualité optimale, chaque conversation est limitée en nombre de messages. Pour continuer — appuyez sur le bouton « Nouvelle conversation ».',
+  },
+  de: {
+    dir: 'ltr',
+    new: 'Neues Gespräch',
+    wTtl: 'Hallo, ich bin Kiro',
+    wSub: 'Finanz-KI-Assistent. Schreibe in jeder Sprache und ich antworte in derselben.',
+    ph: 'Stelle mir jede Finanzfrage...',
+    hint: 'Kiro · Nur allgemeine Finanzinformationen · Keine persönliche Anlageberatung',
+    tabS: '⚙️ Einstellungen', tabA: 'ℹ️ Über', tabL: '⚖️ Rechtliches',
+    theme: 'Design', lm: 'Heller Modus',
+    save: 'Schlüssel speichern',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Keine Datenspeicherung',
+    about: 'Kiro ist ein KI-Finanzexperte, der von Groq angetrieben wird. Er führt Berechnungen durch, analysiert Märkte und erklärt Finanzkonzepte in jeder Sprache.',
+    expLbl: 'Fachgebiete',
+    tags: ['Hypotheken','Zinseszins','Aktien & Märkte','NPV / IRR / DCF','CAGR','ETFs & Anleihen','Unternehmensbewertung','Forex','Krypto','Globale Handelszeiten','Finanzkennzahlen','Steuern','Inflation','Portfolioverwaltung'],
+    discT: '⚠️ Haftungsausschluss',
+    discB: 'Kiro stellt ausschließlich allgemeine Finanzinformationen bereit. Dies stellt keine persönliche Anlage-, Portfolio- oder Steuerberatung dar.',
+    privT: '🔒 Datenschutz',
+    privB: 'Gespräche werden direkt über die Groq-API übertragen und nach Sitzungsende nicht gespeichert.',
+    keySaved: '✓ Schlüssel gespeichert — Kiro ist aktiv!',
+    noKey: '⚠️ Füge deinen Groq-API-Schlüssel in den Einstellungen (☰) hinzu.',
+    err401: '⚠️ Ungültiger API-Schlüssel. Einstellungen prüfen.',
+    err429: '⚠️ Ich bin gerade etwas ausgelastet — bitte in wenigen Sekunden erneut versuchen 😊',
+    err429b: '⚠️ Immer noch ausgelastet. Bitte in einer Minute erneut versuchen.',
+    errNet: '⚠️ Netzwerkfehler — Internetverbindung prüfen.',
+    err0: '⚠️ Datei über Chrome Downloads öffnen, nicht über den Datei-Manager.',
+    errParse: '⚠️ Serverfehler. Bitte erneut versuchen.',
+    errGen: '⚠️ Fehler: ',
+    wordWarn: 'Deine Nachricht ist zu lang. Bitte kürze sie auf maximal 100 Wörter',
+    sessionEnd: 'Du hast das Nachrichtenlimit dieses Gesprächs erreicht. Um schnelle Antwortzeiten und höchste Qualität zu gewährleisten, ist jedes Gespräch auf eine bestimmte Anzahl von Nachrichten begrenzt. Um fortzufahren — drücke auf die Schaltfläche «Neues Gespräch».',
+  },
+  ru: {
+    dir: 'ltr',
+    new: 'Новый чат',
+    wTtl: 'Привет, я Kiro',
+    wSub: 'Финансовый ИИ-ассистент. Пишите на любом языке — отвечу на том же.',
+    ph: 'Задайте любой финансовый вопрос...',
+    hint: 'Kiro · Только общая финансовая информация · Не является инвестиционной консультацией',
+    tabS: '⚙️ Настройки', tabA: 'ℹ️ О боте', tabL: '⚖️ Правовая информация',
+    theme: 'Тема', lm: 'Светлый режим',
+    save: 'Сохранить ключ',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Данные не сохраняются',
+    about: 'Kiro — финансовый эксперт на базе ИИ, работающий на платформе Groq. Выполняет расчёты, анализирует рынки и объясняет финансовые концепции на любом языке.',
+    expLbl: 'Области экспертизы',
+    tags: ['Ипотека','Сложные проценты','Акции и рынки','NPV / IRR / DCF','CAGR','ETF и облигации','Оценка компаний','Forex','Крипто','Время торгов','Финансовые коэффициенты','Налогообложение','Инфляция','Управление портфелем'],
+    discT: '⚠️ Отказ от ответственности',
+    discB: 'Kiro предоставляет только общую финансовую информацию. Это не является личной инвестиционной, портфельной или налоговой консультацией.',
+    privT: '🔒 Конфиденциальность',
+    privB: 'Разговоры передаются напрямую через Groq API и не сохраняются после завершения сессии.',
+    keySaved: '✓ Ключ сохранён — Kiro активен!',
+    noKey: '⚠️ Добавьте ключ Groq API в Настройках (☰), чтобы включить ответы.',
+    err401: '⚠️ Неверный API-ключ. Проверьте Настройки.',
+    err429: '⚠️ Сейчас немного занят — попробуйте через несколько секунд 😊',
+    err429b: '⚠️ Всё ещё занят. Попробуйте через минуту.',
+    errNet: '⚠️ Ошибка сети — проверьте подключение к интернету.',
+    err0: '⚠️ Открывайте файл через раздел Загрузки в Chrome.',
+    errParse: '⚠️ Ошибка сервера. Попробуйте ещё раз.',
+    errGen: '⚠️ Ошибка: ',
+    wordWarn: 'Ваше сообщение слишком длинное. Пожалуйста, сократите его до 100 слов',
+    sessionEnd: 'Вы достигли лимита сообщений в этом разговоре. Для поддержания высокой скорости ответов и максимального качества каждый разговор ограничен по количеству сообщений. Чтобы продолжить — нажмите кнопку «Новый чат».',
+  },
+  it: {
+    dir: 'ltr',
+    new: 'Nuova conversazione',
+    wTtl: 'Ciao, sono Kiro',
+    wSub: 'Assistente IA finanziario. Scrivi in qualsiasi lingua e risponderò nella stessa.',
+    ph: 'Fammi qualsiasi domanda finanziaria...',
+    hint: 'Kiro · Solo informazioni finanziarie generali · Non è una consulenza di investimento',
+    tabS: '⚙️ Impostazioni', tabA: 'ℹ️ Informazioni', tabL: '⚖️ Note legali',
+    theme: 'Tema', lm: 'Modalità chiara',
+    save: 'Salva chiave',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Nessun dato memorizzato',
+    about: 'Kiro è un esperto finanziario IA alimentato da Groq. Esegue calcoli, analizza i mercati e spiega i concetti finanziari in qualsiasi lingua.',
+    expLbl: 'Aree di competenza',
+    tags: ['Mutui','Interesse composto','Azioni e Mercati','NPV / IRR / DCF','CAGR','ETF e Obbligazioni','Valutazione aziendale','Forex','Crypto','Orari di trading','Indici finanziari','Fiscalità','Inflazione','Gestione del portafoglio'],
+    discT: '⚠️ Avvertenza',
+    discB: 'Kiro fornisce solo informazioni finanziarie generali. Non costituisce consulenza di investimento, gestione di portafoglio o consulenza fiscale personale.',
+    privT: '🔒 Privacy',
+    privB: 'Le conversazioni transitano direttamente tramite Groq API e non vengono conservate al termine della sessione.',
+    keySaved: '✓ Chiave salvata — Kiro è attivo!',
+    noKey: '⚠️ Aggiungi la tua chiave Groq API nelle Impostazioni (☰) per abilitare le risposte.',
+    err401: '⚠️ Chiave non valida. Controlla le Impostazioni.',
+    err429: '⚠️ Sono un po\' occupato al momento — riprova tra qualche secondo 😊',
+    err429b: '⚠️ Ancora occupato. Riprova tra un minuto.',
+    errNet: '⚠️ Errore di rete — controlla la connessione internet.',
+    err0: '⚠️ Apri il file dalla scheda Download di Chrome.',
+    errParse: '⚠️ Errore del server. Riprova.',
+    errGen: '⚠️ Errore: ',
+    wordWarn: 'Il tuo messaggio è troppo lungo. Ti preghiamo di abbreviarlo a un massimo di 100 parole',
+    sessionEnd: 'Hai raggiunto il limite di messaggi di questa conversazione. Per mantenere tempi di risposta rapidi e la massima qualità delle risposte, ogni conversazione è limitata nel numero di messaggi. Per continuare — premi il pulsante «Nuova conversazione».',
+  },
+  pt: {
+    dir: 'ltr',
+    new: 'Nova conversa',
+    wTtl: 'Olá, eu sou o Kiro',
+    wSub: 'Assistente de IA financeiro. Escreva em qualquer idioma e responderei no mesmo.',
+    ph: 'Faça-me qualquer pergunta financeira...',
+    hint: 'Kiro · Apenas informações financeiras gerais · Não é aconselhamento de investimento',
+    tabS: '⚙️ Configurações', tabA: 'ℹ️ Sobre', tabL: '⚖️ Legal',
+    theme: 'Tema', lm: 'Modo claro',
+    save: 'Guardar chave',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Sem armazenamento de dados',
+    about: 'Kiro é um especialista financeiro em IA, alimentado pelo Groq. Realiza cálculos, analisa mercados e explica conceitos financeiros em qualquer idioma.',
+    expLbl: 'Áreas de especialização',
+    tags: ['Hipotecas','Juros compostos','Ações e Mercados','NPV / IRR / DCF','CAGR','ETFs e Obrigações','Avaliação de empresas','Forex','Cripto','Horários de negociação','Rácios financeiros','Fiscalidade','Inflação','Gestão de carteira'],
+    discT: '⚠️ Aviso legal',
+    discB: 'O Kiro fornece apenas informações financeiras gerais. Não constitui aconselhamento de investimento, gestão de carteira ou consultoria fiscal pessoal.',
+    privT: '🔒 Privacidade',
+    privB: 'As conversas transitam diretamente pela API Groq e não são armazenadas após o término da sessão.',
+    keySaved: '✓ Chave guardada — Kiro está ativo!',
+    noKey: '⚠️ Adicione a sua chave Groq API nas Configurações (☰) para ativar as respostas.',
+    err401: '⚠️ Chave inválida. Verifique as Configurações.',
+    err429: '⚠️ Estou um pouco ocupado agora — tente novamente em alguns segundos 😊',
+    err429b: '⚠️ Ainda ocupado. Tente novamente em um minuto.',
+    errNet: '⚠️ Erro de rede — verifique a sua ligação à internet.',
+    err0: '⚠️ Abra o ficheiro a partir do separador Downloads do Chrome.',
+    errParse: '⚠️ Erro de servidor. Tente novamente.',
+    errGen: '⚠️ Erro: ',
+    wordWarn: 'A sua mensagem é demasiado longa. Por favor, reduza-a para um máximo de 100 palavras',
+    sessionEnd: 'Atingiu o limite de mensagens desta conversa. Para manter tempos de resposta rápidos e a máxima qualidade das respostas, cada conversa é limitada no número de mensagens. Para continuar — prima o botão «Nova conversa».',
+  },
+  zh: {
+    dir: 'ltr',
+    new: '新对话',
+    wTtl: '你好，我是 Kiro',
+    wSub: '金融 AI 助手。用任何语言写信，我将以相同语言回复。',
+    ph: '问我任何金融问题…',
+    hint: 'Kiro · 仅供一般金融参考 · 非个人投资建议',
+    tabS: '⚙️ 设置', tabA: 'ℹ️ 关于', tabL: '⚖️ 法律',
+    theme: '主题', lm: '浅色模式',
+    save: '保存密钥',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · 不存储数据',
+    about: 'Kiro 是由 Groq 驱动的 AI 金融专家，能够进行计算、分析市场，并以任何语言解释金融概念。',
+    expLbl: '专业领域',
+    tags: ['按揭贷款','复利','股票与市场','NPV / IRR / DCF','CAGR','ETF 与债券','企业估值','外汇','加密货币','全球交易时间','财务比率','税务','通货膨胀','投资组合管理'],
+    discT: '⚠️ 免责声明',
+    discB: 'Kiro 仅提供一般性金融信息，不构成个人投资、投资组合管理或税务建议。',
+    privT: '🔒 隐私',
+    privB: '对话直接通过 Groq API 传输，会话结束后不予保存。',
+    keySaved: '✓ 密钥已保存 — Kiro 已激活！',
+    noKey: '⚠️ 请在设置 (☰) 中添加您的 Groq API 密钥以启用回复。',
+    err401: '⚠️ API 密钥无效。请检查设置。',
+    err429: '⚠️ 我现在有点忙 — 请几秒后重试 😊',
+    err429b: '⚠️ 仍然很忙。请一分钟后重试。',
+    errNet: '⚠️ 网络错误 — 请检查您的网络连接。',
+    err0: '⚠️ 请从 Chrome 的下载标签页打开文件。',
+    errParse: '⚠️ 服务器错误，请重试。',
+    errGen: '⚠️ 错误：',
+    wordWarn: '您的消息过长，请将其缩短至最多 100 个词',
+    sessionEnd: '您已达到本次对话的消息上限。为保持快速响应和最高质量的回答，每次对话均有消息数量限制。如需继续 — 请点击「新对话」按钮。',
+  },
+  ja: {
+    dir: 'ltr',
+    new: '新しいチャット',
+    wTtl: 'こんにちは、Kiro です',
+    wSub: '金融AIアシスタント。どの言語で書いても同じ言語でお答えします。',
+    ph: '金融に関するご質問をどうぞ…',
+    hint: 'Kiro · 一般的な金融情報のみ · 個人的な投資アドバイスではありません',
+    tabS: '⚙️ 設定', tabA: 'ℹ️ Kiro について', tabL: '⚖️ 法的情報',
+    theme: 'テーマ', lm: 'ライトモード',
+    save: 'キーを保存',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · データ非保存',
+    about: 'Kiro は Groq を基盤とする AI 金融エキスパートです。計算の実行、市場分析、あらゆる言語での金融概念の解説が可能です。',
+    expLbl: '専門分野',
+    tags: ['住宅ローン','複利','株式・市場','NPV / IRR / DCF','CAGR','ETF・債券','企業価値評価','外国為替','暗号資産','世界の取引時間','財務指標','税務','インフレ','ポートフォリオ管理'],
+    discT: '⚠️ 免責事項',
+    discB: 'Kiro は一般的な金融情報のみを提供します。個人の投資、ポートフォリオ管理、または税務に関するアドバイスには該当しません。',
+    privT: '🔒 プライバシー',
+    privB: '会話は Groq API を通じて直接送信され、セッション終了後は保存されません。',
+    keySaved: '✓ キーを保存しました — Kiro が起動しました！',
+    noKey: '⚠️ 設定（☰）から Groq API キーを追加してください。',
+    err401: '⚠️ API キーが無効です。設定を確認してください。',
+    err429: '⚠️ ただいま少し混み合っています — 数秒後に再試行してください 😊',
+    err429b: '⚠️ まだ混み合っています。1分後に再試行してください。',
+    errNet: '⚠️ ネットワークエラー — インターネット接続を確認してください。',
+    err0: '⚠️ Chrome のダウンロードタブからファイルを開いてください。',
+    errParse: '⚠️ サーバーエラーが発生しました。再試行してください。',
+    errGen: '⚠️ エラー：',
+    wordWarn: 'メッセージが長すぎます。100語以内に短縮してください',
+    sessionEnd: 'この会話のメッセージ上限に達しました。迅速な応答時間と最高品質の回答を維持するため、各会話はメッセージ数が制限されています。続けるには — 「新しいチャット」ボタンを押してください。',
+  },
+  ko: {
+    dir: 'ltr',
+    new: '새 대화',
+    wTtl: '안녕하세요, 저는 Kiro입니다',
+    wSub: '금융 AI 어시스턴트. 어떤 언어로 쓰셔도 같은 언어로 답변해 드립니다.',
+    ph: '금융 관련 질문을 해 주세요…',
+    hint: 'Kiro · 일반 금융 정보 제공 전용 · 개인 투자 조언이 아닙니다',
+    tabS: '⚙️ 설정', tabA: 'ℹ️ Kiro 소개', tabL: '⚖️ 법적 정보',
+    theme: '테마', lm: '라이트 모드',
+    save: '키 저장',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · 데이터 미저장',
+    about: 'Kiro는 Groq 기반의 AI 금융 전문가입니다. 계산 수행, 시장 분석, 모든 언어로 금융 개념 설명이 가능합니다.',
+    expLbl: '전문 분야',
+    tags: ['주택담보대출','복리','주식 및 시장','NPV / IRR / DCF','CAGR','ETF 및 채권','기업 가치 평가','외환','암호화폐','글로벌 거래 시간','재무 비율','세금','인플레이션','포트폴리오 관리'],
+    discT: '⚠️ 면책 조항',
+    discB: 'Kiro는 일반적인 금융 정보만 제공합니다. 개인 투자, 포트폴리오 관리 또는 세무 조언에 해당하지 않습니다.',
+    privT: '🔒 개인정보 보호',
+    privB: '대화는 Groq API를 통해 직접 전송되며 세션 종료 후 저장되지 않습니다.',
+    keySaved: '✓ 키 저장됨 — Kiro가 활성화되었습니다!',
+    noKey: '⚠️ 설정(☰)에서 Groq API 키를 추가하여 응답을 활성화하세요.',
+    err401: '⚠️ API 키가 유효하지 않습니다. 설정을 확인하세요.',
+    err429: '⚠️ 지금 조금 바쁩니다 — 몇 초 후에 다시 시도해 주세요 😊',
+    err429b: '⚠️ 아직 바쁩니다. 1분 후에 다시 시도해 주세요.',
+    errNet: '⚠️ 네트워크 오류 — 인터넷 연결을 확인하세요.',
+    err0: '⚠️ Chrome 다운로드 탭에서 파일을 열어 주세요.',
+    errParse: '⚠️ 서버 오류가 발생했습니다. 다시 시도해 주세요.',
+    errGen: '⚠️ 오류: ',
+    wordWarn: '메시지가 너무 깁니다. 최대 100단어로 줄여 주세요',
+    sessionEnd: '이 대화의 메시지 한도에 도달했습니다. 빠른 응답 시간과 최고 품질의 답변을 유지하기 위해 각 대화는 메시지 수가 제한됩니다. 계속하려면 — 「새 대화」 버튼을 누르세요.',
+  },
+  tr: {
+    dir: 'ltr',
+    new: 'Yeni Sohbet',
+    wTtl: 'Merhaba, ben Kiro',
+    wSub: 'Finansal yapay zekâ asistanı. Herhangi bir dilde yaz, aynı dilde yanıt veririm.',
+    ph: 'Bana herhangi bir finansal soru sor…',
+    hint: 'Kiro · Yalnızca genel finansal bilgi · Kişisel yatırım tavsiyesi değildir',
+    tabS: '⚙️ Ayarlar', tabA: 'ℹ️ Hakkında', tabL: '⚖️ Yasal',
+    theme: 'Tema', lm: 'Açık Mod',
+    save: 'Anahtarı kaydet',
+    ver: 'Kiro v7 · Groq llama-3.3-70b · Veri depolanmaz',
+    about: 'Kiro, Groq tarafından desteklenen bir yapay zekâ finansal uzmanıdır. Hesaplamalar yapar, piyasaları analiz eder ve her dilde finansal kavramları açıklar.',
+    expLbl: 'Uzmanlık alanları',
+    tags: ['Konut Kredisi','Bileşik Faiz','Hisse Senetleri & Piyasalar','NPV / IRR / DCF','CAGR','ETF ve Tahviller','Şirket Değerlemesi','Forex','Kripto','Küresel İşlem Saatleri','Finansal Oranlar','Vergilendirme','Enflasyon','Portföy Yönetimi'],
+    discT: '⚠️ Sorumluluk Reddi',
+    discB: 'Kiro yalnızca genel finansal bilgi sağlar. Bu bilgiler kişisel yatırım, portföy yönetimi veya vergi danışmanlığı niteliği taşımaz.',
+    privT: '🔒 Gizlilik',
+    privB: 'Sohbetler doğrudan Groq API üzerinden iletilir ve oturum sona erdikten sonra saklanmaz.',
+    keySaved: '✓ Anahtar kaydedildi — Kiro aktif!',
+    noKey: '⚠️ Yanıtları etkinleştirmek için Ayarlar (☰) bölümüne Groq API anahtarını ekle.',
+    err401: '⚠️ Geçersiz API anahtarı. Ayarları kontrol et.',
+    err429: '⚠️ Şu an biraz meşgulüm — birkaç saniye sonra tekrar dene 😊',
+    err429b: '⚠️ Hâlâ meşgul. Bir dakika sonra tekrar dene.',
+    errNet: '⚠️ Ağ hatası — internet bağlantını kontrol et.',
+    err0: '⚠️ Dosyayı Chrome İndirmeler sekmesinden aç.',
+    errParse: '⚠️ Sunucu hatası. Tekrar dene.',
+    errGen: '⚠️ Hata: ',
+    wordWarn: 'Mesajın çok uzun. Lütfen en fazla 100 kelimeye kısalt',
+    sessionEnd: 'Bu sohbetin mesaj sınırına ulaştın. Hızlı yanıt sürelerini ve en yüksek kaliteyi korumak için her sohbet belirli sayıda mesajla sınırlıdır. Devam etmek için — «Yeni Sohbet» düğmesine bas.',
+  },
+};
+
+/* ══════════════════════════════════════
+   SYSTEM PROMPT (sent to Groq)
+══════════════════════════════════════ */
+const SYS = `⚠️ PRIME DIRECTIVE — ACCURACY ABOVE ALL:
+NEVER invent facts, statistics, names, prices, dates, or events. If uncertain → say so honestly and suggest a reliable source (Google, official site, news). Admitting "I don't know" is always better than fabricating.
+VERIFY before stating: only assert things you are confident are true. Do not combine unrelated info into false conclusions.
+
+READING COMPREHENSION: Understand intent despite typos, slang, or broken grammar in ANY language. Infer vague messages from context. Detect sarcasm. Abbreviations: ETF GDP P/E ROI IPO CPI HODL DCA FOMO.
+
+You are Kiro — an AI assistant expert in finance & economics, with broad general knowledge across all topics.
+
+LANGUAGE — ABSOLUTE RULES:
+Respond in the EXACT language the user wrote in — detected from the SCRIPT (characters used), not the language of the words.
+
+TRANSLITERATION RULE: Respond in the language of the SCRIPT, not the meaning of words.
+Hebrew letters (אבג) → respond Hebrew even if words sound French/Spanish/etc.
+Arabic letters → respond Arabic. Latin letters → detect by vocabulary.
+Example: "מי אמור אינטיאנדאס אספניול" = Hebrew script → respond Hebrew.
+NUANCES: Native-speaker quality for every language — correct grammar, spelling, accents (ñ á é ä ö ü ß à â ç è ô û œ ą ę ł ş ğ ı etc.). Hebrew: no wrong ה-prefix. Arabic: correct ال-attachment.
+TRANSLATION: If asked to translate → respond entirely in target language.
+Ambiguous language → use UI tab language.
+
+PERSONALITY:
+Warm, human, and deeply emotionally intelligent — in every language equally.
+Adapt tone automatically: casual → relaxed & friendly; frustration → calm & patient; sadness → gentle & caring; excitement → energetic; confusion → slow & clear; anger → calm, validating.
+
+EMOTIONAL INTELLIGENCE — READING HUMANS ACROSS ALL LANGUAGES:
+Understand the emotion behind the words, not just the literal meaning.
+
+• FRUSTRATION: "nothing works","ugh","I give up" | HE: "לא מצליח","זה לא עובד" | AR: "ما بعرف","تعبت" | ES: "no entiendo nada" | FR: "rien ne marche" | DE: "nichts klappt" | RU: "надоело"
+→ Respond with patience, offer step-by-step help.
+
+• SADNESS: "feeling down","not great","tired of everything" | HE: "עייף מהכל","קשה לי" | AR: "مش بخير","حاسس بضيقة" | ES: "estoy triste","me siento mal" | FR: "ça ne va pas" | DE: "mir geht es nicht gut" | RU: "мне грустно" | TR: "çok üzgünüm" | IT: "sono triste" | PT: "não tô bem"
+→ Acknowledge the feeling first, then gently offer help.
+
+• OVERWHELM: "too much","overwhelmed","I can't handle this" | HE: "לחוץ","יותר מדי" | AR: "مضغوط","فوق طاقتي" | ES: "agobiado","no puedo más" | FR: "débordé"
+→ Acknowledge first, then offer one clear step at a time.
+
+• SARCASM: "oh great, another problem","yeah right","sure that helps" | HE: "מעולה, עוד בעיה" | AR: "أكيد هذا يساعد" | ES: "claro, cómo no" | FR: "super, encore un problème"
+→ Read frustration behind it, respond to the real feeling.
+
+• EXCITEMENT: "omg!","finally!","YES!" | HE: "סוף סוף!","וואו!" | AR: "أخيراً!" | ES: "¡por fin!" | FR: "enfin!"
+→ Match their energy.
+
+• CONFUSION: "what?","huh?","I don't get it" | HE: "מה?","לא הבנתי" | AR: "ايش؟","ما فهمت" | ES: "¿qué?","no entiendo" | FR: "j'ai pas compris"
+→ Slow down, rephrase simply, use an example.
+
+• LONELINESS: "nobody cares","I'm alone" | HE: "אין לי עם מי לדבר" | AR: "ما في أحد" | ES: "nadie me entiende" → Be present and warm.
+
+• SELF-HARM (any language — always treat seriously):
+  burning, cutting, hurting, hitting oneself, suicidal thoughts, wanting to disappear
+  → ALWAYS respond with empathy and care. Do NOT dismiss or question intent.
+
+INDIRECT LANGUAGE & HIDDEN MEANING — ALL LANGUAGES:
+• "not great" = struggling  • "a bit tired" = possibly exhausted  • "it's fine" (with frustration) = not fine
+• "whatever" / "egal" / "poco importa" / "как хочешь" / "يسوى" = resignation/frustration
+• "I guess" / "suppose" / "אולי" / "يمكن" = uncertainty or downplaying something serious
+• "sort of" / "kind of" / "more or less" = softening — might be minimizing a real problem
+
+SLANG & EXPRESSIONS BY LANGUAGE:
+HE: סבבה=ok/fine, יאללה=let's go, ממש=really, נו=so/well, שטויות=nonsense, בא לי=I feel like, אין כוח=no energy
+AR: يلا=let's go, وللا=really?, تمام=ok, مش عارف=don't know, بالزبط=exactly, خلص=enough/done, زهقت=I'm bored/tired
+ES: qué rollo=what a drag, me da igual=I don't care, venga ya=come on, bueno (sighing)=resignation, ya=already/OK
+FR: bof=meh, c'est nul=it's bad, ça craint=it sucks, laisse tomber=forget it, pas terrible=not great, pfff=ugh
+DE: na ja=well/so-so, ach so=I see, quatsch=nonsense, egal=doesn't matter, mist=dang, naja=meh
+RU: ладно=fine(reluctant), ничего=nothing/whatever, блин=damn, нормально=it's fine(neutral), всё=that's it
+IT: mah=I dunno, boh=dunno, dai=come on, che palle=how annoying, figurati=don't mention it
+PT: saudade=longing, não tô bem=I'm not okay, tá ótimo (sarcastically)=yeah right, que saudade=I miss this
+TR: neyse=whatever/anyway, tamam tamam=okay okay, yok artık=seriously, çok zor=very hard
+KO: 아 몰라=forget it, 힘들다=I'm struggling, 어쩌라고=so what do you want
+ZH: 算了=forget it, 好烦=so annoying, 随便=whatever, 不行了=I can't anymore
+GREETING (hi/hello/hola/שלום/مرحبا etc.) → Greet naturally + introduce: "I'm Kiro, an AI specializing in finance & economics. I can help with any topic — stocks, crypto, science, history, and more!" (NO footer on greetings.)
+FILLER (ok/טוב/vale with no question) → "How can I help?" in their language. (NO footer.)
+
+ANTI-HALLUCINATION — CRITICAL:
+⛔ NEVER invent movie plots, directors, awards, statistics, dates, or any facts you are not 100% certain about.
+⛔ If asked about something unfamiliar → ask for clarification. Do NOT invent a fictional answer.
+⛔ Max Oscars any film ever won = 11. Never say 13.
+Film facts: Jurassic Park 1993 (Spielberg) = 3 Oscars. Schindler's List 1993 (Spielberg) = 7 Oscars. Titanic 1997 = 11 Oscars.
+If unsure → "I'm not certain — check IMDb for accurate info."
+
+RATES (Feb 2026): 1 USD≈3.10 ILS | 1 EUR≈3.37 ILS | 1 GBP≈3.93 ILS
+
+FINANCE EXPERTISE:
+Stocks, bonds, ETFs, crypto, forex, mortgages, loans, inflation, GDP, central banks, dividends, portfolio, trading, pension.
+Formulas: A=P(1+r/n)^nt | M=P[r(1+r)^n]/[(1+r)^n-1] | PV=FV/(1+r)^n
+Hours: NYSE 9:30-16:00 ET | TASE 9:59-17:25 | LSE 8-16:30 GMT
+Hebrew: ריבית=interest | נייר ערך=security | תשואה=yield | שווי שוק=market cap.
+
+MARKET DATA (Feb 2026): S&P500~6838 | Nasdaq~22627 | TA-35~4230 | BTC~$95K | Gold~$2930
+
+GENERAL KNOWLEDGE: Answer confidently on any topic — science, math, history, tech, culture, politics, philosophy, psychology, practical tasks. If uncertain → say so. Health/legal → recommend a professional.
+IDENTITY: You are Kiro — an AI chatbot, not a human. Not a licensed financial advisor.
+
+SESSION END: If message is exactly "__SESSION_END__", respond ONLY: "To keep performance fast, this conversation is limited in length. Press 'New Chat' to continue." (in conversation language)
+
+WORD COUNT: 40-80 words for substantive responses. 15-35 words for greetings/filler. Never exceed 90 words.
+CONTENT RULE: ALWAYS write actual content first, THEN footer. NEVER respond with footer alone. If user makes a statement about you (e.g. "you were made for finance but you know other things"), confirm it warmly with a real sentence, then add footer.
+TRANSLATE REQUESTS: If user says "translate [something] to [language]" — translate the previous message to that language. If no previous message is clear, ask what they'd like translated.
+
+FOOTER — MANDATORY ON EVERY SUBSTANTIVE RESPONSE (never on greetings/filler):
+Footer must be in the SAME language as your response. Add blank line before footer.
+OPTION A (financial): "General information only — not personal investment advice" + "My expertise is finance & economics, but I am happy to help with other topics too"
+OPTION B (other): same two lines as above.
+Both options have identical text — just translate them into the exact response language.
+`;
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Load saved config
+  try {
+    const cfg = JSON.parse(localStorage.getItem('kiro6_cfg') || '{}');
+    if (cfg.lang) lang = cfg.lang;  // restored saved language
+    // Light mode: use saved preference, default is light
+    if (cfg.light === false) {
+      light = false;
+      document.body.classList.remove('light');
+      document.getElementById('tsw').classList.remove('on');
+    }
+  } catch(e) {}
+  applyLang(); // ensure tab button matches lang on every load
+
+  // Start collapsed — no animation on load
+  const sbEl = document.getElementById('sb');
+  sbEl.style.transition = 'none';
+  sbEl.classList.add('off');
+  sbOpen = false;
+  requestAnimationFrame(() => { sbEl.style.transition = ''; });
+
+  applyLang();
+});
+
+/* ══════════════════════════════════════
+   LANGUAGE
+══════════════════════════════════════ */
+function applyLang() {
+  if (!T[lang]) { lang = 'en'; }
+  const t = T[lang];
+
+  // Document direction
+  document.documentElement.lang = lang;
+  document.documentElement.dir = t.dir;
+  document.getElementById('main').dir = t.dir;
+  document.getElementById('sb').dir = t.dir;
+
+  // Lang bar buttons
+  ['he','ar','en','es'].forEach(l => {
+    const lb = document.getElementById('lb-'+l);
+    if (lb) lb.classList.toggle('on', l === lang);
+  });
+  // For non-tab languages, remove all tab highlights
+  if (!['he','ar','en','es'].includes(lang)) {
+    ['he','ar','en','es'].forEach(l => {
+      const lb = document.getElementById('lb-'+l);
+      if (lb) lb.classList.remove('on');
+    });
+  }
+
+  // Topbar
+  document.getElementById('L-new').textContent = t.new;
+
+  // Welcome
+  document.getElementById('L-wttl').textContent = t.wTtl;
+  document.getElementById('L-wsub').textContent = t.wSub;
+
+  // Input
+  document.getElementById('inp').placeholder = t.ph;
+  document.getElementById('L-hint').textContent = t.hint;
+
+  // Sidebar tabs
+  document.getElementById('sbt-s').textContent = t.tabS;
+  document.getElementById('sbt-a').textContent = t.tabA;
+  document.getElementById('sbt-l').textContent = t.tabL;
+
+  // Settings panel
+  document.getElementById('L-theme').textContent = t.theme;
+  document.getElementById('L-lm').textContent = t.lm;
+  document.getElementById('L-ver').textContent = t.ver;
+
+  // About panel
+  document.getElementById('L-about').textContent = t.about;
+  document.getElementById('L-exp-lbl').textContent = t.expLbl;
+  document.getElementById('L-tags').innerHTML = t.tags.map(x => `<span class="tag">${x}</span>`).join('');
+
+  // Legal panel
+  document.getElementById('L-disc-t').textContent = t.discT;
+  document.getElementById('L-disc-b').textContent = t.discB;
+  document.getElementById('L-priv-t').textContent = t.privT;
+  document.getElementById('L-priv-b').textContent = t.privB;
+}
+
+function setLang(l) {
+  lang = l;
+  saveCfg();
+  applyLang();
+}
+
+/* ══════════════════════════════════════
+   THEME
+══════════════════════════════════════ */
+function toggleTheme() {
+  light = !light;
+  document.body.classList.toggle('light', light);
+  document.getElementById('tsw').classList.toggle('on', light);
+  saveCfg();
+}
+
+/* ══════════════════════════════════════
+   CONFIG SAVE
+══════════════════════════════════════ */
+function saveCfg() {
+  try { localStorage.setItem('kiro6_cfg', JSON.stringify({ lang, light })); } catch(e) {}
+}
+
+/* ══════════════════════════════════════
+   API KEY
+══════════════════════════════════════ */
+
+/* ══════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════ */
+function toggleSB() {
+  sbOpen = !sbOpen;
+  document.getElementById('sb').classList.toggle('off', !sbOpen);
+  if (window.innerWidth <= 768) {
+    document.getElementById('ov').classList.toggle('on', sbOpen);
+  }
+}
+
+function showTab(id) {
+  document.querySelectorAll('.sbt').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.pnl').forEach(p => p.classList.remove('on'));
+  document.getElementById('sbt-'+id).classList.add('on');
+  document.getElementById('pnl-'+id).classList.add('on');
+}
+
+/* ══════════════════════════════════════
+   INPUT HANDLING
+══════════════════════════════════════ */
+function onInput(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 190) + 'px';
+  const words = el.value.trim() === '' ? 0 : el.value.trim().split(/\s+/).length;
+  const tooLong = words > 100;
+  const has = el.value.trim().length > 0 && !typing && !tooLong;
+  document.getElementById('send').disabled = !has;
+  document.getElementById('send').classList.toggle('on', has);
+  const warn = document.getElementById('word-warn');
+  if (warn) {
+    if (tooLong) {
+      const langWarn = T[lang] && T[lang].wordWarn ? T[lang].wordWarn : 'ודא שהודעתך מכילה 100 מילים או פחות';
+      warn.textContent = langWarn;
+      warn.style.cssText = 'display:block;color:#c0392b;background:rgba(255,235,235,0.95);border:1.5px solid rgba(192,57,43,0.3);border-radius:8px;padding:7px 16px;font-size:13px;font-weight:600;text-align:center;margin-bottom:6px;';
+    } else {
+      warn.style.display = 'none';
+    }
+  }
+}
+
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!document.getElementById('send').disabled) sendMsg();
+  }
+}
+
+/* ══════════════════════════════════════
+   SCROLL
+══════════════════════════════════════ */
+function showWordWarning() {
+  const warn = document.getElementById('word-warn');
+  if (warn) { warn.style.display = 'block'; }
+}
+
+function scrollToUserMsg() {
+  // Find the last user bubble and scroll it to the top of the view
+  const msgs = document.getElementById('msgs');
+  if (!msgs) return;
+  const userBubbles = msgs.querySelectorAll('.mw.u');
+  if (!userBubbles.length) return;
+  const last = userBubbles[userBubbles.length - 1];
+  last.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function scrollToBottom() {
+  const scroll = document.getElementById('scroll');
+  if (scroll) {
+    setTimeout(() => {
+      scroll.scrollTo({ top: scroll.scrollHeight, behavior: 'smooth' });
+    }, 50);
+  }
+}
+
+function scrollToLast() {
+  scrollToBottom();
+}
+
+/* ══════════════════════════════════════
+   SEND MESSAGE
+══════════════════════════════════════ */
+async function sendMsg() {
+  const inp = document.getElementById('inp');
+  const text = inp.value.trim();
+  if (!text || typing) return;
+
+  // Block messages over 100 words
+  const wordCount = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  if (wordCount > 100) {
+    showWordWarning();
+    return;
+  }
+
+  // No API key — show localised prompt
+  if (!apiKey) {
+    if (msgCount === 0) document.getElementById('welcome').classList.add('gone');
+    msgCount++;
+    addBubble('user', text);
+    addBubble('kiro', T[lang].noKey);
+    inp.value = ''; inp.style.height = 'auto';
+    updateSendBtn(false);
+    return;
+  }
+
+  // Hide welcome on first message
+  if (msgCount === 0) document.getElementById('welcome').classList.add('gone');
+
+  // Session limit: max 8 user messages per session
+  if (msgCount >= 9) {
+    addBubble('user', text);
+    scrollToUserMsg();
+    inp.value = ''; inp.style.height = 'auto';
+    document.getElementById('send').disabled = true;
+    document.getElementById('send').classList.remove('on');
+    typing = true;
+    const stid = showTyping();
+    callGroq('__SESSION_END__').then(function(reply) {
+      removeTyping(stid);
+      addBubble('kiro', reply);
+      typing = false;
+      // No auto-scroll on session end
+      // Highlight new-chat button ONLY after session end message is shown
+      const nb = document.getElementById('L-new');
+      if (nb) {
+        nb.style.borderColor = 'var(--gold)';
+        nb.style.color = 'var(--gold-l)';
+        nb.style.fontWeight = '600';
+        nb.style.boxShadow = '0 0 8px rgba(185,149,81,0.4)';
+        nb.style.animation = 'pulse 1.5s ease-in-out infinite';
+      }
+    }).catch(function() {
+      removeTyping(stid);
+      addBubble('kiro', T[lang].sessionEnd);
+      typing = false;
+      const nb = document.getElementById('L-new');
+      if (nb) {
+        nb.style.borderColor = 'var(--gold)';
+        nb.style.color = 'var(--gold-l)';
+        nb.style.fontWeight = '600';
+        nb.style.boxShadow = '0 0 8px rgba(185,149,81,0.4)';
+        nb.style.animation = 'pulse 1.5s ease-in-out infinite';
+      }
+    });
+    return;
+  }
+
+  msgCount++;
+
+  addBubble('user', text);
+  scrollToUserMsg();
+  history.push({ role: 'user', content: text });
+
+  inp.value = ''; inp.style.height = 'auto';
+  typing = true;
+  updateSendBtn(false);
+
+  // ── Self-harm & crime detection ──────────────────────────
+  var SELF_HARM_KEYWORDS = /\b(suicide|suicidal|kill myself|end my life|hurt myself|self[- ]harm|cut myself|cutting myself|burn myself|burning myself|burn(ing)? my (skin|arm|wrist|body)|hit myself|hitting myself|punch myself|punching myself|scratch myself|scratching myself|harm myself|harming myself|starve myself|starving myself|injure myself|injuring myself|wound myself|bang my head|overdose|want to die|wanna die|don\'t want to live|dont want to live|can\'t go on|cant go on|end it all|no reason to live|purposely hurt|hurt on purpose|on purpose to myself|myself on purpose|myself purposely|myself intentionally)\b|(?:אני רוצה למות|לפגוע בעצמי|להתאבד|לחתוך את עצמי|לשרוף את עצמי|להכות את עצמי|לסיים את חיי|לא רוצה לחיות|אין לי סיבה לחיות|פגיעה עצמית|פוגע בעצמי|גורם לעצמי כאב|לגרום לעצמי כאב|انتحار|أؤذي نفسي|أريد الموت|إيذاء النفس|أحرق نفسي|أجرح نفسي|suicid|me quiero matar|hacerme daño|quiero morir|me quemo|me corto|me golpeo|me hago daño|me hago daño a propósito|me lastimo|me lastimo a mi mismo|me veux mourir|me faire du mal|je veux mourir|vouloir mourir|je me blesse|je me brûle|je me coupe|хочу умереть|причинить себе вред|режу себя|жгу себя|бью себя|voglio morire|farmi del male|mi taglio|mi brucio|quero morrer|me machucar|me cortar|me queimar)|שורף את עצמי|חותך את עצמי|מכה את עצמי|פוגע בגוף שלי|רוצה להיות מת|רוצה למות|להרוג את עצמי|לא רוצה להיות|أريد أن أموت|أريد الموت|أقطع نفسي|أحرق جسمي|أؤلم نفسي|أعاقب نفسي|ich will sterben|will sterben|ich verletze mich|verletze mich|ich schneide mich|schneide mich|ich brenne mich|brenne mich|selbstverletzung|причиняю себе вред|причинить вред себе|режу себя|жгу себя|хочу умереть|покончить с жизнью|burnn myself|cutt myself|myslef purposely|hurting myself|hurt my self|burn my self|cut my self|harm my self|cutting again|started cutting|been cutting|cutting myself again|started cutting|been cutting|intihar|kendime zarar|ölmek istiyorum|自傷|自殺したい|死にたい|자해|자살하고 싶다|죽고 싶다/i;
+  var CRIME_KEYWORDS = /\b(how to (murder|stab|poison|bomb|attack|rape|assault)|how to (shoot|hack) (someone|a person|people)|how to kill (?!time|it|the|my |your )|make (a |an )?(bomb|explosives?|weapon)|build (a |an )?(bomb|explosives?|weapon|device)|illegal (drug|weapon|firearm)|drug (deal|dealer|dealing|trafficking|cartel|lord)|buy.{0,10}(gun|weapon).{0,15}illeg|acquire.{0,10}(gun|weapon).{0,15}illeg|how to (traffic|smuggle|launder)|weapon(s)? (smuggling|trafficking)|how to (make|synthesize|produce) (meth|heroin|cocaine|fentanyl|crack|drugs?|narcotics)|where to (buy|get|find) (drugs?|meth|heroin|cocaine|crack|fentanyl)|how to (pick|crack) (a |the )?lock|how to build explosive|money launder(ing)?|kidnap|child abuse|child grooming|pedophil|drug traffic(king)?|weapons? smuggl)\b|(?:להרוג מישהו|לרצוח|לסחור בסמים|לייצר פצצה|לאנוס|כיצד לגנוב|كيف أقتل|كيف أصنع قنبلة|تهريب مخدرات|اغتصاب|قتل شخص|cómo matar|fabricar bomba|traficar drogas|comment tuer|fabriquer une bombe|как убить|как сделать бомбу|تجارة المخدرات)|murder (someone|a person|people|him|her|them)|how to (hack|break) into|hack into (a |the )?(bank|system|account|computer|server)|buy.{0,20}gun.{0,20}(illegally|illegal|without|unlicensed)|get (drugs?|narcotics|pills?|prescription drugs?) (without|illegally|no) (prescription|doctor|script)|want to (hurt|kill|harm|attack|murder) (someone|a person|him|her|them|my|people)|how to (break into|rob|burglarize|steal from) (a |the )?(house|home|car|store|bank)|איך לעשות פצצה|לייצר פצצה|לעשות נשק|לקנות נשק לא חוקי|לרצוח|לסחור בסמים|איך להרוג|كيف أصنع قنبلة|كيف أقتل شخص|تهريب|اغتصاب|سرقة بنك|wie töte ich|wie baue ich eine bombe|wie mache ich eine bombe|einen mord begehen|come uccidere|come fare una bomba|traffico di droga|como hacer una bomba|como matar|trafico de drogas|comment faire une bombe|comment tuer quelqu|hacer (una |la )?(bomba|explosivo)|fabricar (una |la )?(bomba|explosivo)|como matar|cómo matar|comprar (arma|pistola|fusil) (ilegal|sin licencia)|נשק לא חוקי|לקנות נשק|לרכוש נשק|weapons? for sale illegally/i;
+
+  function getSelfHarmMsg(userLang) {
+    var msgs = {
+      Hebrew: `💙 נשמע שאתה עובר משהו קשה מאוד כרגע — אתה לא לבד.\n\nאם מדובר בפגיעה עצמית מכוונת: אנא פנה לאדם קרוב, לרופא, או לקו תמיכה נפשית בארצך.\n🔗 findahelpline.com — מציאת קו סיוע בכל מדינה בעולם\n\nאם מדובר בתאונה בלתי מכוונת: הנח את האזור הפגוע תחת מים קרירים זורמים למשך 10–20 דקות, אל תפוצץ שלפוחיות, וכסה בתחבושת נקייה. אם הפציעה חמורה — פנה לקבלת עזרה רפואית.\n\nחייך חשובים — כאן אם תרצה לדבר.`,
+      Arabic: `💙 يبدو أنك تمر بلحظة صعبة جداً — لست وحدك.\n\nإذا كان الأمر إيذاءً نفسياً متعمداً: يُرجى التواصل مع شخص تثق به، طبيب، أو خط دعم نفسي في بلدك.\n🔗 findahelpline.com — للعثور على خط مساعدة في أي دولة\n\nإذا كان حادثاً غير مقصود: ضع المنطقة المتضررة تحت ماء بارد جارٍ لمدة 10–20 دقيقة، لا تفقع البثور، وغطِّ الجرح بضمادة نظيفة. إذا كانت الإصابة شديدة — اطلب المساعدة الطبية.\n\nحياتك تستحق — هنا إذا أردت التحدث.`,
+      English: `💙 It sounds like you might be going through something very painful right now — you are not alone.\n\nIf this is intentional self-harm: please reach out to someone you trust, a doctor, or a mental health helpline in your country.\n🔗 findahelpline.com — find a crisis line anywhere in the world\n\nIf this was an accident: run cool (not cold) water over the affected area for 10–20 minutes, do not burst any blisters, and cover with a clean bandage. If the injury is severe, seek medical attention.\n\nYour life matters — I am here if you want to talk.`,
+      Spanish: `💙 Parece que estás atravesando un momento muy difícil ahora mismo — no estás solo/a.\n\nSi se trata de una autolesión intencional: por favor, comunícate con alguien de confianza, un médico o una línea de apoyo emocional en tu país.\n🔗 findahelpline.com — encuentra una línea de crisis en cualquier país\n\nSi fue un accidente: coloca la zona afectada bajo agua fresca (no helada) durante 10–20 minutos, no revientes las ampollas y cúbrela con un vendaje limpio. Si la lesión es grave, busca atención médica.\n\nTu vida importa — aquí estoy si quieres hablar.`,
+      French: `💙 Il semble que vous traversez un moment très douloureux en ce moment — vous n'êtes pas seul(e).\n\nS'il s'agit d'une automutilation intentionnelle : veuillez contacter une personne de confiance, un médecin ou une ligne d'aide dans votre pays.\n🔗 findahelpline.com — trouvez un service d'aide dans n'importe quel pays\n\nS'il s'agit d'un accident : passez la zone blessée sous de l'eau fraîche (pas glacée) pendant 10 à 20 minutes, ne percez pas les cloques et couvrez avec un bandage propre. En cas de blessure grave, consultez un médecin.\n\nVotre vie compte — je suis là si vous souhaitez parler.`,
+      German: `💙 Es klingt, als würdest du gerade etwas sehr Schmerzhaftes durchmachen — du bist nicht allein.\n\nWenn es sich um absichtliche Selbstverletzung handelt: Bitte wende dich an eine Vertrauensperson, einen Arzt oder eine Krisenhotline in deinem Land.\n🔗 findahelpline.com — finde eine Krisenhotline in jedem Land\n\nWenn es ein Unfall war: Halte die betroffene Stelle 10–20 Minuten unter kühles (nicht eiskaltes) Wasser, öffne keine Blasen und bedecke die Stelle mit einem sauberen Verband. Bei schweren Verletzungen bitte ärztliche Hilfe aufsuchen.\n\nDein Leben ist wichtig — ich bin hier, wenn du reden möchtest.`,
+      Russian: `💙 Похоже, вы переживаете что-то очень тяжёлое прямо сейчас — вы не одни.\n\nЕсли это намеренное самоповреждение: пожалуйста, обратитесь к близкому человеку, врачу или на телефон доверия в вашей стране.\n🔗 findahelpline.com — найдите линию помощи в любой стране\n\nЕсли это был несчастный случай: подставьте пострадавший участок под прохладную (не ледяную) проточную воду на 10–20 минут, не прокалывайте пузыри и накройте чистой повязкой. При серьёзной травме обратитесь за медицинской помощью.\n\nВаша жизнь важна — я здесь, если хотите поговорить.`,
+      Italian: `💙 Sembra che tu stia vivendo qualcosa di molto doloroso in questo momento — non sei solo/a.\n\nSe si tratta di autolesionismo intenzionale: ti preghiamo di contattare una persona di fiducia, un medico o una linea di supporto nel tuo paese.\n🔗 findahelpline.com — trova una linea di crisi in qualsiasi paese\n\nSe è stato un incidente: metti la zona colpita sotto acqua fresca (non ghiacciata) per 10–20 minuti, non bucare le vesciche e coprila con una benda pulita. Se la lesione è grave, cerca assistenza medica.\n\nLa tua vita conta — sono qui se vuoi parlare.`,
+      Portuguese: `💙 Parece que você está passando por algo muito doloroso agora — você não está sozinho/a.\n\nSe for autolesão intencional: por favor, entre em contato com alguém de confiança, um médico ou uma linha de apoio no seu país.\n🔗 findahelpline.com — encontre uma linha de crise em qualquer país\n\nSe foi um acidente: coloque a área afetada sob água fria (não gelada) por 10 a 20 minutos, não estoure bolhas e cubra com um curativo limpo. Se a lesão for grave, procure ajuda médica.\n\nSua vida importa — estou aqui se quiser conversar.`,
+      Turkish: `💙 Şu anda çok zor bir şey yaşıyor gibisin — yalnız değilsin.\n\nBu kasıtlı bir öz zarar ise: lütfen güvendiğin birine, bir doktora veya ülkendeki bir kriz hattına ulaş.\n🔗 findahelpline.com — dünyanın her yerinde kriz hattı bul\n\nEğer bir kaza ise: etkilenen bölgeyi 10–20 dakika boyunca serin (buz gibi değil) akan su altında tut, kabarcıkları patlatma ve temiz bir pansumanla ört. Yaralanma ciddi ise tıbbi yardım al.\n\nHayatın önemli — konuşmak istersen buradayım.`,
+      Chinese: `💙 听起来您现在正在经历一些非常痛苦的事情——您并不孤单。\n\n如果这是故意自伤：请联系您信任的人、医生或您所在国家的心理援助热线。\n🔗 findahelpline.com — 在世界任何地方找到危机热线\n\n如果是意外：将受伤部位置于凉水（非冰水）下冲洗10–20分钟，不要刺破水泡，用干净的绷带覆盖。如果伤势严重，请寻求医疗帮助。\n\n您的生命很重要——如果您想倾诉，我在这里。`,
+      Japanese: `💙 今、とても辛い状況にいるようですね——あなたは一人じゃありません。\n\n意図的な自傷行為の場合：信頼できる人、医師、またはお住まいの国の相談窓口に連絡してください。\n🔗 findahelpline.com — 世界中どこでも相談窓口を探せます\n\n事故の場合：患部を涼しい（冷たすぎない）流水で10〜20分間冷やし、水ぶくれを破らず、清潔な包帯で覆ってください。重傷の場合は医療機関を受診してください。\n\nあなたの命は大切です——話したいときはここにいます。`,
+      Korean: `💙 지금 매우 힘든 상황을 겪고 계신 것 같습니다——혼자가 아닙니다.\n\n의도적인 자해인 경우：믿을 수 있는 사람, 의사, 또는 가까운 정신건강 상담 전화에 연락해 주세요.\n🔗 findahelpline.com — 전 세계 어디서나 위기 상담 전화 찾기\n\n사고인 경우：다친 부위를 시원한(얼음물이 아닌) 흐르는 물에 10~20분간 대고, 물집을 터뜨리지 말고 깨끗한 붕대로 덮어 주세요. 부상이 심각하면 의료 도움을 받으세요.\n\n당신의 삶은 소중합니다——이야기하고 싶으시면 여기 있습니다.`,
+    };
+    return msgs[userLang] || msgs.English;
+  }
+  function getCrimeMsg(userLang) {
+    var msgs = {
+      Hebrew:     '⚠️ לא אוכל לעזור עם בקשה זו.\nמה שתיארת אינו חוקי ועלול לפגוע קשות באחרים. אם אתה עד לפשע או נמצא בסכנה, פנה לרשויות אכיפת החוק המקומיות שלך.',
+      Arabic:     '⚠️ لا أستطيع المساعدة في هذا الطلب.\nما وصفته غير قانوني وقد يضر بالآخرين بشكل خطير. إذا كنت شاهداً على جريمة أو في خطر، تواصل مع السلطات المحلية في بلدك.',
+      English:    '⚠️ I can\'t help with that request.\nWhat you described is illegal and could seriously harm others. If you witness a crime or are in danger, please contact your local law enforcement.',
+      Spanish:    '⚠️ No puedo ayudar con esa solicitud.\nLo que describes es ilegal y puede causar un daño grave a otros. Si eres testigo de un delito o estás en peligro, contacta a las autoridades locales de tu país.',
+      French:     '⚠️ Je ne peux pas aider avec cette demande.\nCe que vous décrivez est illégal et pourrait causer de graves préjudices à autrui. Si vous êtes témoin d\'un crime ou en danger, contactez les autorités locales de votre pays.',
+      German:     '⚠️ Ich kann bei dieser Anfrage nicht helfen.\nWas Sie beschreiben, ist illegal und könnte anderen ernsthaft schaden. Wenn Sie Zeuge einer Straftat sind oder in Gefahr sind, wenden Sie sich an die lokalen Behörden Ihres Landes.',
+      Russian:    '⚠️ Я не могу помочь с этим запросом.\nТо, что вы описываете, является незаконным и может причинить серьёзный вред другим. Если вы стали свидетелем преступления или находитесь в опасности, обратитесь в местные правоохранительные органы.',
+      Italian:    '⚠️ Non posso aiutare con questa richiesta.\nCiò che hai descritto è illegale e potrebbe causare gravi danni ad altre persone. Se sei testimone di un crimine o sei in pericolo, contatta le autorità locali del tuo paese.',
+      Portuguese: '⚠️ Não posso ajudar com esse pedido.\nO que você descreveu é ilegal e pode causar danos graves a outras pessoas. Se você testemunhar um crime ou estiver em perigo, contate as autoridades locais do seu país.',
+      Turkish:    '⚠️ Bu konuda yardımcı olamam.\nTarif ettiğiniz şey yasadışıdır ve başkalarına ciddi zarar verebilir. Bir suç tanığıysanız veya tehlikedeyseniz, ülkenizdeki yerel yetkililere başvurun.',
+      Chinese:    '⚠️ 我无法帮助处理这个请求。\n您所描述的行为是违法的，可能对他人造成严重伤害。如果您目睹了犯罪行为或处于危险中，请联系您所在国家的当地执法机构。',
+      Japanese:   '⚠️ そのリクエストにはお応えできません。\nあなたが説明したことは違法であり、他者に深刻な被害を与える可能性があります。犯罪を目撃した場合や危険にさらされている場合は、現地の法執行機関に連絡してください。',
+      Korean:     '⚠️ 해당 요청에는 도움을 드릴 수 없습니다.\n설명하신 내용은 불법이며 타인에게 심각한 피해를 줄 수 있습니다. 범죄를 목격하거나 위험에 처해 있다면 현지 법 집행 기관에 연락하시기 바랍니다.',
+    };
+    return msgs[userLang] || msgs.English;
+  }
+
+  var userLangForAlert = (function() {
+    if (/[\u05D0-\u05EA]/.test(text)) return 'Hebrew';
+    if (/[\u0600-\u06FF]/.test(text)) return 'Arabic';
+    if (/[\u0400-\u04FF]/.test(text)) return 'Russian';
+    if (/[\u4E00-\u9FFF]/.test(text)) return 'Chinese';
+    if (/[\u3040-\u30FF]/.test(text)) return 'Japanese';
+    if (/[\uAC00-\uD7AF]/.test(text)) return 'Korean';
+    if (/[\u0E00-\u0E7F]/.test(text)) return 'Turkish';
+    if (/\b(hola|gracias|cómo|qué|por favor|buenos)\b/i.test(text)) return 'Spanish';
+    if (/\b(bonjour|merci|comment|pour|vous|est-ce)\b/i.test(text)) return 'French';
+    if (/\b(hallo|danke|bitte|nicht|ich|wie|was)\b/i.test(text)) return 'German';
+    if (/\b(ciao|grazie|come|perché|sono|mi)\b/i.test(text)) return 'Italian';
+    if (/\b(olá|obrigado|obrigada|como|porque|você)\b/i.test(text)) return 'Portuguese';
+    if (/\b(merhaba|teşekkür|nasıl|evet|tamam|lütfen)\b/i.test(text)) return 'Turkish';
+    return 'English';
+  })();
+
+  if (SELF_HARM_KEYWORDS.test(text)) {
+    typing = false;
+    updateSendBtn(true);
+    addBubble('kiro', getSelfHarmMsg(userLangForAlert));
+    scrollToBottom();
+    history.push({ role: 'assistant', content: getSelfHarmMsg(userLangForAlert) });
+    return;
+  }
+
+  if (CRIME_KEYWORDS.test(text)) {
+    typing = false;
+    updateSendBtn(true);
+    addBubble('kiro', getCrimeMsg(userLangForAlert));
+    scrollToBottom();
+    history.push({ role: 'assistant', content: getCrimeMsg(userLangForAlert) });
+    return;
+  }
+  // ─────────────────────────────────────────────────────────
+
+  const tid = showTyping();
+  // No scroll here — stay at user message
+
+  try {
+    const reply = await callGroq(text);
+    removeTyping(tid);
+    var fixedReply = enforceFooter(reply, text);
+    addBubble('kiro', fixedReply);
+    // No auto-scroll after reply — user stays at their message
+    history.push({ role: 'assistant', content: fixedReply });
+  } catch(err) {
+    if (err.message === '__retry__') {
+      // Silent retry up to 3 times - typing indicator stays visible throughout
+      let retryCount = 0;
+      const delays = [5000, 10000, 15000];
+      function doRetry() {
+        setTimeout(async function() {
+          try {
+            const reply3 = await callGroq(text);
+            removeTyping(tid);
+            var fixedReply3 = enforceFooter(reply3, text);
+            addBubble('kiro', fixedReply3);
+            // No auto-scroll after reply
+            history.push({ role: 'assistant', content: fixedReply3 });
+            typing = false;
+            updateSendBtn(inp.value.trim().length > 0);
+          } catch(e3) {
+            retryCount++;
+            if (retryCount < delays.length && e3.message === '__retry__') {
+              doRetry();
+            } else {
+              removeTyping(tid);
+              addBubble('kiro', T[lang].err429);
+              typing = false;
+              updateSendBtn(inp.value.trim().length > 0);
+            }
+          }
+        }, delays[retryCount]);
+      }
+      doRetry();
+      return;
+    }
+    removeTyping(tid);
+    addBubble('kiro', err.message);
+  }
+
+  typing = false;
+  updateSendBtn(inp.value.trim().length > 0);
+}
+
+function updateSendBtn(enable) {
+  const btn = document.getElementById('send');
+  btn.disabled = !enable;
+  btn.classList.toggle('on', enable);
+}
+
+/* ══════════════════════════════════════
+   GROQ API CALL
+══════════════════════════════════════ */
+function callGroq(userText) {
+  var t = T[lang];
+
+  // ── Intent detection: if user explicitly requests a language, use that ──
+  function detectIntendedLang(txt) {
+    var t = txt.toLowerCase();
+    // Patterns: "translate to X", "in X", "respond in X", "answer in X", "write in X", "say it in X"
+    var langMap = {
+      hebrew:     'Hebrew',  עברית: 'Hebrew',  'hebrew': 'Hebrew',
+      arabic:     'Arabic',  ערבית: 'Arabic',   عربي: 'Arabic', عربية: 'Arabic',
+      english:    'English', אנגלית: 'English', inglés: 'English', inglés: 'English', anglais: 'English', englisch: 'English',
+      spanish:    'Spanish', ספרדית: 'Spanish', español: 'Spanish', espagnol: 'Spanish', spanisch: 'Spanish',
+      french:     'French',  צרפתית: 'French',  français: 'French', francés: 'French', französisch: 'French',
+      german:     'German',  גרמנית: 'German',  deutsch: 'German', alemán: 'German',
+      italian:    'Italian', איטלקית: 'Italian', italiano: 'Italian',
+      portuguese: 'Portuguese', פורטוגזית: 'Portuguese', português: 'Portuguese', portugais: 'Portuguese',
+      russian:    'Russian', רוסית: 'Russian', русский: 'Russian', ruso: 'Russian',
+      chinese:    'Chinese', סינית: 'Chinese', chinois: 'Chinese', chino: 'Chinese',
+      japanese:   'Japanese', יפנית: 'Japanese', japonés: 'Japanese',
+      korean:     'Korean',  קורנית: 'Korean', coréen: 'Korean', coreano: 'Korean',
+      turkish:    'Turkish', טורקית: 'Turkish', turc: 'Turkish', turco: 'Turkish',
+      hindi:      'Hindi',   הינדי: 'Hindi',
+      polish:     'Polish',  פולנית: 'Polish',
+      dutch:      'Dutch',   הולנדית: 'Dutch',
+      swedish:    'Swedish', שוודית: 'Swedish'
+    };
+    // Check for explicit language request patterns
+    var patterns = [
+      /(?:translate|תרגם|ترجم|traduce|traduire|übersetze|traduci|traduza).*?(?:to|to the|ל|إلى|al?|en|auf|in)\s+(\w+)/i,
+      /(?:respond|answer|reply|write|say|ענה|כתוב|תענה|تجاوب|اجب|responde|réponds|antworte|rispondi|responda)\s+(?:in|ב|باللغة|en|auf|in)\s+(\w+)/i,
+      /(?:in|ב|باللغة|en|auf|en)\s+(\w+)(?:\s*(?:please|בבקשה|من فضلك|por favor|s'il vous plaît|bitte|per favore)?)\s*$/i,
+      /(?:בשפה|בעברית|בערבית|בספרדית|בצרפתית|باللغة)\s*(\w*)/i
+    ];
+    // Direct language name at end of message
+    var words = t.split(/\s+/);
+    var lastWord = words[words.length - 1].replace(/[?!.,]/g,'');
+    var secondLast = words.length > 1 ? words[words.length-2].replace(/[?!.,]/g,'') : '';
+    // Check if last word or last two words are a language name
+    if (langMap[lastWord]) return langMap[lastWord];
+    if (langMap[secondLast + ' ' + lastWord]) return langMap[secondLast + ' ' + lastWord];
+    // Check patterns
+    for (var i = 0; i < patterns.length; i++) {
+      var m = t.match(patterns[i]);
+      if (m) {
+        var lang = (m[1]||'').toLowerCase().replace(/[?!.,]/g,'');
+        if (langMap[lang]) return langMap[lang];
+      }
+    }
+    // Hardcoded Hebrew keywords in message
+    if (/בעברית|לעברית/.test(txt)) return 'Hebrew';
+    if (/בערבית|לערבית/.test(txt)) return 'Arabic';
+    if (/באנגלית|לאנגלית/.test(txt)) return 'English';
+    if (/בספרדית|לספרדית/.test(txt)) return 'Spanish';
+    if (/בצרפתית|לצרפתית/.test(txt)) return 'French';
+    if (/בגרמנית|לגרמנית/.test(txt)) return 'German';
+    if (/באיטלקית|לאיטלקית/.test(txt)) return 'Italian';
+    if (/ברוסית|לרוסית/.test(txt)) return 'Russian';
+    if (/בערבי|لعربي|بالعربي|بالعربية/.test(txt)) return 'Arabic';
+    if (/بالانجليزي|بالإنجليزية|بالعبرية|بالاسبانية|بالفرنسية/.test(txt)) {
+      if (/بالانجليزي|بالإنجليزية/.test(txt)) return 'English';
+      if (/بالعبرية/.test(txt)) return 'Hebrew';
+      if (/بالاسبانية/.test(txt)) return 'Spanish';
+      if (/بالفرنسية/.test(txt)) return 'French';
+    }
+    return null;
+  }
+
+  // Detect language from the current user message
+  function detectLang(txt) {
+    if (!txt || txt === '__SESSION_END__') return null;
+    var t = txt.toLowerCase().trim();
+    // Normalize: strip diacritics + apostrophes for keyword matching
+    var tn = t.normalize ? t.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : t;
+    tn = tn.replace(/['\u2019\u2018`]/g, '');
+
+    // ── Unambiguous script detection ──
+    if (/[\u05D0-\u05EA]/.test(txt)) return 'Hebrew';
+    if (/[\u0600-\u06FF]/.test(txt)) return 'Arabic';
+    if (/[\u0400-\u04FF]/.test(txt)) return 'Russian';
+    if (/[\u4E00-\u9FFF]/.test(txt)) return 'Chinese';
+    if (/[\u3040-\u30FF]/.test(txt)) return 'Japanese';
+    if (/[\uAC00-\uD7AF]/.test(txt)) return 'Korean';
+    if (/[\u0E00-\u0E7F]/.test(txt)) return 'Thai';
+    if (/[\u0900-\u097F]/.test(txt)) return 'Hindi';
+
+    // ── Unambiguous diacritics ──
+    if (/[\u00E4\u00F6\u00DC\u00DF\u00C4\u00D6]/.test(txt)) return 'German';
+    if (/[\u00E3\u00F5\u00C3\u00D5]/.test(txt)) return 'Portuguese';
+    if (/[\u0105\u0107\u0119\u0142\u0144\u015B\u017A\u017C]/.test(txt)) return 'Polish';
+    if (/[\u011F\u0131\u015F]/.test(txt)) return 'Turkish';
+    if (/[\u00F1\u00D1\u00BF\u00A1\u00F3\u00FA\u00FC]/.test(txt)) return 'Spanish';
+    if (/[\u00E0\u00E2\u00E7\u00E8\u00EA\u00EB\u00EE\u00EF\u00F4\u00F9\u00FB\u0153\u00E6]/.test(txt)) return 'French';
+    if (/[\u00E5\u00C5]/.test(txt) && !/[\u00E4\u00F6]/.test(txt)) return 'Swedish';
+
+    // ── Keyword detection (accent-stripped tn, apostrophes removed) ──
+    // French first (cest, daccord, je, tu, il, etc. are unambiguously French)
+    if (/\b(bonjour|bonsoir|bonne nuit|bonne journee|salut|merci|de rien|excusez|pardon|comment ca|pourquoi|voila|aussi|avec|dans|pour|je ne|je sais|je veux|je peux|je dois|je suis|je suis|tu es|il est|elle est|nous sommes|vous etes|ils sont|cest|cest quoi|cest bien|cest vrai|cetait|daccord|pas du tout|bien sur|bien entendu|evidemment|effectivement|absolument|certainement|vraiment|franchement|finalement|maintenant|toujours|jamais|quelque|quelqu|beaucoup|tres|trop|assez|encore|deja|bientot|argent|bourse|mon ami|mon frere|ma soeur|ca va|ca marche|ca suffit|peut etre|il faut|il y a|je ne comprends|je ne sais|sil vous plait|questce|merci beaucoup|pas vraiment|cest ca|allons|bien entendu|mon dieu|sacre)\b/.test(tn)) return 'French';
+    // Spanish (unambiguous Spanish words)
+    if (/\b(hola|buenas|buenos dias|buenas noches|gracias|por favor|de nada|lo siento|perdon|disculpa|entiendo|no entiendo|comprendo|no comprendo|no se|no lo se|claro|vale|vamos|porque|siempre|nunca|puedo|quiero|tengo|cuando|donde|aqui|ahora|antes|despues|tambien|pero|muy|hay|que es|que son|a veces|por eso|de acuerdo|exactamente|absolutamente|sin embargo|aunque|ademas|entonces|solamente|generalmente|naturalmente|normalmente|efectivamente|tampoco|mano|tio|amigo|amiga|hermano|oye|dale|venga|chido|wey|che|porfa|dios|me ayuda|lo que|es que|claro que|claro que si|como estas|que tal|buen dia)\b/.test(tn)) return 'Spanish';
+    // German
+    if (/\b(hallo|guten morgen|guten tag|guten abend|gute nacht|danke|bitte|entschuldigung|wie geht|ich weiss|ich verstehe|verstehe nicht|was ist|was sind|warum|weil|obwohl|trotzdem|dennoch|jedoch|nicht|kein|keine|niemand|nichts|immer|niemals|vielleicht|sicher|bestimmt|genau|richtig|falsch|ich bin|du bist|wir sind|es gibt|ich mochte|ich kann|ich muss|geld|borsen|aktien|sehr gut|kein problem|keine ahnung|ich verstehe nicht)\b/.test(tn)) return 'German';
+    // Italian
+    if (/\b(ciao|buongiorno|buonasera|buona notte|arrivederci|grazie|prego|scusi|per favore|come stai|come va|non capisco|non so|che cosa|puoi aiutarmi|aiutami|capito|va bene|daccordo|ovviamente|naturalmente|certamente|esattamente|assolutamente|soldi|borsa|azioni|anche|sono|siamo|sei|voglio|vuoi|posso|puoi|devo|perche|quando|dove|molto|poco|sempre|mai|adesso|ora|prima|grande|piccolo)\b/.test(tn)) return 'Italian';
+    // Portuguese
+    if (/\b(ola|oi|bom dia|boa tarde|boa noite|obrigado|obrigada|por favor|de nada|desculpa|como vai|nao entendo|nao sei|me ajuda|pode me|quero|tenho|sou|estou|dinheiro|bolsa|acoes|tambem|sim|nao|talvez|claro|certo|sempre|nunca|agora|depois|muito|pouco|tudo bem|por isso|quando|quanto)\b/.test(tn)) return 'Portuguese';
+    // Turkish
+    if (/\b(merhaba|gunaydin|iyi gunler|iyi geceler|tesekkur|tesekkurler|lutfen|affedersin|anliyorum|anlamiyorum|bilmiyorum|ne demek|ne zaman|nerede|nasil|neden|cunku|evet|hayir|tamam|belki|tabii|elbette|kesinlikle|daima|bazen|simdi|once|sonra|para|borsa|hisse)\b/.test(tn)) return 'Turkish';
+    // Dutch
+    if (/\b(hallo|dag|goedemorgen|goedemiddag|goedenavond|bedankt|dank je|alsjeblieft|begrijp ik niet|ik weet niet|wat is|wat zijn|waarom|maar|ook|niet|geen|altijd|nooit|misschien|zeker|precies|ik ben|jij bent|wij zijn|geld|aandelen|beurs)\b/.test(tn)) return 'Dutch';
+
+    // é disambiguation (after stripping: qué→que, sé→se, etc.)
+    if (/[\u00E9]/.test(txt)) {
+      if (/\b(que|se|tambien|ademas|despues|ingles|segun|cafe|aleman|espanol|frances|cual|cuanto|quien|esto|esta|eso|esa|soy|eres|tiene|tienen|tambien|traves|razon|tambien)\b/.test(tn)) return 'Spanish';
+      return 'French';
+    }
+
+    if (/[a-zA-Z]/.test(txt)) return 'English';
+    return null;
+  }
+  var msgLang = detectIntendedLang(userText) || detectLang(userText);
+
+  // Build messages array
+  var messages = [{ role: 'system', content: SYS }];
+  var hist = history.slice(-6);
+  for (var i = 0; i < hist.length; i++) {
+    messages.push({ role: hist[i].role === 'kiro' ? 'assistant' : hist[i].role, content: hist[i].content });
+  }
+  // Inject a strong language instruction JUST before the user message
+  if (msgLang) {
+    var langNames = {
+      Hebrew:'עברית', Arabic:'العربية', Spanish:'Español', English:'English',
+      French:'Français', German:'Deutsch', Italian:'Italiano', Portuguese:'Português',
+      Russian:'Русский', Chinese:'中文', Japanese:'日本語', Korean:'한국어',
+      Turkish:'Türkçe', Persian:'فارسی', Hindi:'हिन्दी', Thai:'ภาษาไทย',
+      Polish:'Polski', Swedish:'Svenska'
+    };
+    var langNative = langNames[msgLang] || msgLang;
+    messages.push({
+      role: 'system',
+      content: 'CRITICAL LANGUAGE RULE: The user just wrote in ' + msgLang + ' (' + langNative + '). You MUST respond ENTIRELY in ' + msgLang + '. IMPORTANT: Even if the message contains words that look like they belong to another language — respond in ' + msgLang + '. The user typed in ' + msgLang + ' script/characters, so that IS their language. Do NOT switch languages. Every word including the footer must be in ' + msgLang + '.'
+    });
+  }
+  messages.push({ role: 'user', content: userText });
+
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://api.groq.com/openai/v1/chat/completions', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + GROQ_KEY);
+    xhr.timeout = 30000;
+    xhr.ontimeout = function() { reject(new Error(t.errGen + 'timeout')); };
+    xhr.onerror = function() { reject(new Error(t.err0)); };
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState !== 4) return;
+      var data;
+      if (xhr.status === 0 || xhr.responseText === '') return reject(new Error(t.err0));
+      try { data = JSON.parse(xhr.responseText); } catch(e) {
+        return reject(new Error(t.errParse));
+      }
+      if (xhr.status === 401) return reject(new Error(t.err401));
+      if (xhr.status === 429) return reject(new Error('__retry__'));
+      if (xhr.status !== 200) return reject(new Error(t.errGen + 'HTTP ' + xhr.status));
+      var txt = data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if (!txt) return reject(new Error(t.errGen + 'empty response'));
+      resolve(txt);
+    };
+    xhr.send(JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: messages, max_tokens: 1500, temperature: 0.7, stream: false }));
+  });
+}
+
+/* ══════════════════════════════════════
+   BUBBLES
+══════════════════════════════════════ */
+
+/* ══════════════════════════════════════
+   FOOTER ENFORCER — guarantees correct footer language
+══════════════════════════════════════ */
+var FOOTER_A = {
+  Hebrew:     'מידע כללי בלבד — אינו מהווה ייעוץ השקעות אישי',
+  English:    'General information only — not personal investment advice',
+  Arabic:     'معلومات عامة فقط — ليست نصيحة استثمارية شخصية',
+  Spanish:    'Información general únicamente — no es asesoramiento de inversión personal',
+  French:     'Informations générales uniquement — pas un conseil en investissement personnel',
+  German:     'Nur allgemeine Informationen — keine persönliche Anlageberatung',
+  Italian:    'Solo informazioni generali — non è una consulenza di investimento personale',
+  Portuguese: 'Apenas informações gerais — não é aconselhamento de investimento pessoal',
+  Russian:    'Только общая информация — не является личной инвестиционной консультацией',
+  Turkish:    'Yalnızca genel bilgi — kişisel yatırım tavsiyesi değildir',
+  Chinese:    '仅供参考 — 不构成个人投资建议',
+  Japanese:   '一般情報のみ — 個人的な投資アドバイスではありません',
+  Korean:     '일반 정보 전용 — 개인 투자 조언이 아닙니다',
+  Hindi:      'केवल सामान्य जानकारी — व्यक्तिगत निवेश सलाह नहीं है',
+  Polish:     'Tylko informacje ogólne — nie jest to osobista porada inwestycyjna',
+  Swedish:    'Endast allmän information — inte personlig investeringsrådgivning',
+  Dutch:      'Alleen algemene informatie — geen persoonlijk beleggingsadvies'
+};
+var FOOTER_B = {
+  Hebrew:     'התמחותי היא בפיננסים וכלכלה, אך אשמח לעזור לך גם בנושאים אחרים',
+  English:    'My expertise is finance and economics, but I am happy to help with other topics too',
+  Arabic:     'تخصصي في المال والاقتصاد، لكنني سعيد بمساعدتك في أي موضوع آخر',
+  Spanish:    'Mi especialidad es finanzas y economía, pero con gusto te ayudo con otros temas también',
+  French:     'Ma sp\u00e9cialit\u00e9 est la finance et l\u2019\u00e9conomie, mais je suis ravi de vous aider sur d\u2019autres sujets',
+  German:     'Meine Spezialität ist Finanzen und Wirtschaft, aber ich helfe gerne auch bei anderen Themen',
+  Italian:    'La mia specialità è finanza ed economia, ma sono felice di aiutarti anche con altri argomenti',
+  Portuguese: 'Minha especialidade é finanças e economia, mas fico feliz em ajudar com outros temas também',
+  Russian:    'Моя специализация — финансы и экономика, но я рад помочь и по другим темам',
+  Turkish:    'Uzmanlığım finans ve ekonomi, ancak diğer konularda da yardımcı olmaktan mutluluk duyarım',
+  Chinese:    '我专注于金融和经济，但也很乐意帮助其他话题',
+  Japanese:   '私の専門は金融と経済ですが、他のトピックについてもお手伝いします',
+  Korean:     '제 전문 분야는 금융과 경제이지만, 다른 주제도 기꺼이 도와드립니다',
+  Hindi:      'मेरी विशेषज्ञता वित्त और अर्थशास्त्र में है, लेकिन अन्य विषयों में भी खुशी से मदद करूंगा',
+  Polish:     'Moją specjalnością są finanse i ekonomia, ale chętnie pomogę także w innych tematach',
+  Swedish:    'Min specialitet är finans och ekonomi, men jag hjälper gärna till med andra ämnen också',
+  Dutch:      'Mijn specialiteit is financiën en economie, maar ik help graag ook met andere onderwerpen'
+};
+
+// Financial keywords that indicate footer A is needed
+// NOTE: \b (word boundary) does NOT work with Arabic/Hebrew/CJK chars — no \b used here
+var FINANCIAL_KEYWORDS = /stocks?(?! up\b| room\b| take\b| pile\b| photo\b| footage\b| image\b| pot\b| car\b)|stock (market|price|exchange|split|buyback|option|dividend)|stockmarket|share(?!d )|bond(?! between| of love| of trust| of friendship| with (you|me|us|him|her|them))|bonds?\b(?! movie| film| james)|etf|crypto|bitcoin|forex|mortgage|loan|inflation|gdp|dividend|portfolio|invest|trading(?! insults| cards| places| post| card)|pension|s&p|nasdaq|dow jones|interest rate|compound interest|annual return|yield|equity|mutual fund|hedge fund|index fund|market cap|p\/e ratio|bull market|bear market|asset|commodity|futures|options contract|ריבית|מניה|מניות|אגרות חוב|קריפטו|משכנתא|הלוואה|אינפלציה|דיבידנד|תיק השקעות|פנסיה|תשואה|שוק ההון|בורסה|بيتكوين|كريبتو|فوركس|أسهم|سندات|عملات رقمية|فائدة|رهن|تضخم|محفظة|استثمار|تداول|acciones|bonos|criptomoneda|hipoteca|inflación|dividendo|cartera|bolsa|акции|облигации|криптовалюта|ипотека|инфляция|дивиденды|портфель|株式|債券|暗号通貨|金利|インフレ|配当|ポートフォリオ|שער|ביטקוין|מטבע|קרן|נדלן|נדל|בנק|ריבית|כלכלה|השקעה|השקעות|הלוואה|קריפטו|بيتكوين|ذهب|أسهم|سعر|استثمار|عملة|بنك|فائدة|比特币|股票|基金|投资|汇率|黄金|债券|利率|加密|ビットコイン|株式|投資|為替|金利|仮想通貨|ファンド|비트코인|주식|투자|환율|금리|암호화폐|bourse|action|obligation|investissement|crypto|taux|aktie|börse|anleihe|investition|kurs|zinsen|oro|petróleo|precio del|inversión|أستثمر|биткоин|крипт|זהב|כסף|עולה|العملات|رقمية|بنوك|بنك|borsa|inflação|azioni|obbligazioni|criptomoneta|rendimento|portafoglio|investimento|ação|acoes\b|ações\b|obrigação|criptom|investimento|ação|rendimento|криптовалюта|להשקיע|השקעה|השקעות|inflazione|kripto para|yatırım|enflasyon|hisse senedi|tahvil|yatırım fonu|kur farkı|faiz orani|фондовый|биткоин|крипт|акции|облигации|инвестиции|ипотека|título|ações|obrigações|mercado financeiro|taxa de juro|fundo de investimento|btc\b|btcoin|bitkoin|bitcoiin|stok market|stoks\b|stonk|inflatoin|inflacion|inflasao|intrest rate|mortgag|portfolo|diversif|divident|aktei|aktein|crpto|cryptoo|cryptp|krypto|aktienkauf|aktienmarkt|börse|borse|börsen|roi\b|reit\b|cpi\b|ipo\b|etf\b|aum\b|nav\b|eps\b|comprar acoes|acoes da bolsa|como comprar acoes/i;
+
+function detectReplyLang(txt) {
+  if (!txt) return 'English';
+  if (/[\u05D0-\u05EA]/.test(txt)) return 'Hebrew';
+  if (/[\u0600-\u06FF]/.test(txt)) return 'Arabic';
+  if (/[\u0400-\u04FF]/.test(txt)) return 'Russian';
+  if (/[\u4E00-\u9FFF]/.test(txt)) return 'Chinese';
+  if (/[\u3040-\u30FF]/.test(txt)) return 'Japanese';
+  if (/[\uAC00-\uD7AF]/.test(txt)) return 'Korean';
+  if (/[\u0900-\u097F]/.test(txt)) return 'Hindi';
+  if (/[\u0E00-\u0E7F]/.test(txt)) return 'Thai';
+  if (/[\u0104-\u017E&&[^\u00C0-\u024F]]/.test(txt) || /[ąćęłńśźż]/i.test(txt)) return 'Polish';
+  // Check special chars (most distinctive first)
+  if (/[äöüß]/.test(txt)) return 'German';
+  if (/[àâçéèêëîïôùûÿœæ]/.test(txt)) return 'French';
+  if (/[áéíóúüñ¿¡]/.test(txt)) return 'Spanish';
+  if (/[ãõ]/.test(txt)) return 'Portuguese';
+  if (/[ğışçö]/.test(txt)) return 'Turkish';
+  if (/[äöå]/.test(txt) && !/[äöü]/.test(txt)) return 'Swedish';
+  // Keyword-based for Latin scripts
+  var t = txt.toLowerCase();
+  if (/\b(soy|estoy|puedo|ayudarte|cualquier|acciones|bonos|economia|finanzas|también|idioma|hola|gracias|como|porque|pero|nada|cuando|donde|bolsa|moneda|precio|mercado)\b/.test(t)) return 'Spanish';
+  if (/\b(bonjour|je suis|vous|nous|pour|avec|dans|aussi|mais|sur|les|des|une|qui|que|par|ou|donc|suis|avez|pouvez|marché|bourse|argent|économie)\b/.test(t)) return 'French';
+  if (/\b(ich bin|ich kann|sie|wir|und|oder|nicht|auch|aber|bitte|danke|hallo|guten|wie|was|warum|wann|wo|markt|wirtschaft|geld)\b/.test(t)) return 'German';
+  if (/\b(sono|posso|qualsiasi|domanda|azioni|obbligazioni|economia|finanza|anche|grazie|ciao|come|perché|quando|dove|mercato|soldi)\b/.test(t)) return 'Italian';
+  if (/\b(sou|posso|qualquer|pergunta|ações|economia|finanças|também|somos|olá|como|porque|quando|onde|mercado|dinheiro)\b/.test(t)) return 'Portuguese';
+  return 'English';
+}
+
+// Known footer strings to strip (all languages, both A and B)
+var ALL_FOOTERS_A = Object.values(FOOTER_A);
+var ALL_FOOTERS_B = Object.values(FOOTER_B);
+
+function enforceFooter(reply, userMsg) {
+  // ── 1. Strip ALL existing footer lines (any language) ─────────────
+  // NOTE: detect language AFTER stripping so Hebrew footer doesn't confuse detection
+  var lines = reply.split('\n');
+  var filtered = lines.filter(function(line) {
+    var trimmed = line.trim();
+    if (!trimmed) return true;
+    // Strip if line is a known footer (exact or contained)
+    var isFooterA = ALL_FOOTERS_A.some(function(f) {
+      return trimmed === f || trimmed.indexOf(f) > -1 || f.indexOf(trimmed) > -1;
+    });
+    var isFooterB = ALL_FOOTERS_B.some(function(f) {
+      return trimmed === f || trimmed.indexOf(f) > -1 || f.indexOf(trimmed) > -1;
+    });
+    // Also strip lines that look like financial disclaimer in any language
+    var looksLikeFooter = /ייעוץ השקעות|investment advice|conseil en investissement|Anlageberatung|consulenza di investimento|aconselhamento de investimento|инвестиционн|yatırım tavsiyesi|consejo de inversion|asesoramiento de inversion|asesoramiento de inversión/i.test(trimmed)
+      || /תמחותי|ma spécialité|meine spezialität|my expertise|mi especialidad|minha especialidade|моя специализация|uzmanlığım/i.test(trimmed);
+    return !isFooterA && !isFooterB && !looksLikeFooter;
+  });
+
+  // Remove trailing blank lines
+  while (filtered.length > 0 && filtered[filtered.length-1].trim() === '') {
+    filtered.pop();
+  }
+
+  // Detect language AFTER stripping (so Hebrew footer doesn't pollute detection)
+  var replyLang = detectReplyLang(filtered.join('\n'));
+
+  // ── 2. Detect if greeting response → NO footer at all ─────────────
+  // A greeting reply introduces Kiro and ends with "just ask" type phrase
+  var replyBody = filtered.join(' ');
+  var isGreeting = /\bKiro\b/i.test(replyBody) && (
+    /solo pregunt|just ask|פשוט שאל|frag mich|chiedi pure|أسأل|demande|pergunte|спрашивай|pregúntame|soru sor|ask me|schreib mir|scrivi/i.test(replyBody) ||
+    /cualquier idioma|any language|כל שפה|أي لغة|toute langue|jeder sprache|qualsiasi lingua|qualquer idioma/i.test(replyBody)
+  );
+  if (isGreeting) return filtered.join('\n');
+
+  // ── 3. Determine A or B based on USER message topic ───────────────
+  // Use ONLY user message for financial detection (not Kiro's reply which might mention finance)
+  var isFinancial = FINANCIAL_KEYWORDS.test(userMsg || '');
+  var footerMap = isFinancial ? FOOTER_A : FOOTER_B;
+  var footerText = footerMap[replyLang] || (isFinancial ? FOOTER_A.English : FOOTER_B.English);
+
+  return filtered.join('\n') + '\n\n' + footerText;
+}
+
+function addBubble(role, content) {
+  const msgs = document.getElementById('msgs');
+  const wrap = document.createElement('div');
+  wrap.className = 'mw' + (role === 'user' ? ' u' : '');
+  // Detect text direction based on content
+  const hasHebrew = /[\u0590-\u05FF]/.test(content);
+  const hasArabic = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(content);
+  const isRTL = hasHebrew || hasArabic;
+  wrap.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const av = role === 'kiro'
+    ? '<div class="av k">K</div>'
+    : '<div class="av u"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/></svg></div>';
+
+  const body = role === 'kiro'
+    ? renderMD(content)
+    : `<p>${escHTML(content).replace(/\n/g, '<br>')}</p>`;
+
+  const copyBtn = role === 'kiro'
+    ? `<button class="cp-btn" onclick="copyText(this, ${JSON.stringify(content)})">⎘</button>`
+    : '';
+
+  const dirAttr = isRTL ? 'dir="rtl"' : 'dir="ltr"';
+  wrap.innerHTML = `
+    <div class="mrow" ${dirAttr}>${av}<div class="bbl ${role === 'kiro' ? 'k' : 'u'}" ${dirAttr}>${body}${copyBtn}</div></div>
+    <div class="mt">${time}</div>
+  `;
+  msgs.appendChild(wrap);
+}
+
+function copyText(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓';
+    setTimeout(() => { btn.textContent = '⎘'; }, 1600);
+  }).catch(() => {});
+}
+
+/* ══════════════════════════════════════
+   MARKDOWN RENDERER
+══════════════════════════════════════ */
+function renderMD(raw) {
+  let s = escHTML(raw);
+
+  // Code blocks
+  s = s.replace(/```[\w]*\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+  // Inline code
+  s = s.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+  // Tables
+  s = s.replace(/((?:\|[^\n]+\|\n?)+)/g, m => {
+    const rows = m.trim().split('\n');
+    let html = '<table>';
+    rows.forEach((row, i) => {
+      const cells = row.split('|').slice(1, -1);
+      if (cells.every(c => /^[-:\s]+$/.test(c))) return; // separator row
+      const tag = i === 0 ? 'th' : 'td';
+      html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+    });
+    return html + '</table>';
+  });
+
+  // Headings
+  s = s.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+  s = s.replace(/^### (.+)$/gm,  '<h3>$1</h3>');
+  s = s.replace(/^## (.+)$/gm,   '<h3>$1</h3>');
+  s = s.replace(/^# (.+)$/gm,    '<h3>$1</h3>');
+
+  // Bold/italic
+  s = s.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  s = s.replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>');
+  s = s.replace(/\*([^*\n]+)\*/g,     '<em>$1</em>');
+
+  // Blockquote
+  s = s.replace(/^&gt; ?(.+)$/gm, '<div class="bq">$1</div>');
+
+  // Lists
+  s = s.replace(/^[-•*] (.+)$/gm, '<li>$1</li>');
+  s = s.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  // Wrap consecutive li
+  s = s.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+
+  // Paragraphs
+  s = s.replace(/\n\n+/g, '</p><p>');
+  s = s.replace(/\n/g, '<br>');
+
+  return `<p>${s}</p>`;
+}
+
+function escHTML(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ══════════════════════════════════════
+   TYPING INDICATOR
+══════════════════════════════════════ */
+function showTyping() {
+  const id = 'ty' + Date.now();
+  const d = document.createElement('div');
+  d.className = 'mw'; d.id = id;
+  d.innerHTML = '<div class="mrow"><div class="av k">K</div><div class="bbl k"><div class="tdots"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div></div>';
+  document.getElementById('msgs').appendChild(d);
+  return id;
+}
+
+function removeTyping(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+/* ══════════════════════════════════════
+   NEW CHAT
+══════════════════════════════════════ */
+function newChat() {
+  history = [];
+  msgCount = 0;
+  // Reset new-chat button pulse
+  const nbr = document.getElementById('L-new');
+  if (nbr) { nbr.style.borderColor=''; nbr.style.color=''; nbr.style.fontWeight=''; nbr.style.boxShadow=''; nbr.style.animation=''; }
+  document.getElementById('msgs').innerHTML = '';
+  document.getElementById('welcome').classList.remove('gone');
+  document.getElementById('scroll').scrollTop = 0;
+  const inp = document.getElementById('inp');
+  inp.value = ''; inp.style.height = 'auto';
+  document.getElementById('send').disabled = true;
+  document.getElementById('send').classList.remove('on');
+  // Hide word warning
+  const ww = document.getElementById('word-warn');
+  if (ww) ww.style.display = 'none';
+  // Close sidebar on mobile
+  if (window.innerWidth <= 768 && sbOpen) toggleSB();
+}
+
+/* ══════════════════════════════════════
+   RESIZE
+══════════════════════════════════════ */
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 900) {
+    document.getElementById('ov').classList.remove('on');
+  }
+});
+</script>
+</body>
+</html>
